@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         ViewUtils.setUpToolbar(this, null, R.string.app_name, R.dimen.action_bar_elevation);
 
         RecyclerView rv = (RecyclerView) findViewById(R.id.recycler);
-        rv.setAdapter(new UserActivityRVAdapter(this));
+        rv.setAdapter(new TasksRVAdapter(this));
         rv.setHasFixedSize(true);
     }
 

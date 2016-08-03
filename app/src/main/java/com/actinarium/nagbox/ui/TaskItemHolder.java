@@ -17,49 +17,54 @@
 package com.actinarium.nagbox.ui;
 
 import android.content.Context;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
-import com.actinarium.nagbox.databinding.UserActivityItemBinding;
+import com.actinarium.nagbox.databinding.TaskItemBinding;
+import com.actinarium.nagbox.model.Task;
 
 /**
- * View holder for user activity list item
+ * View holder for a single task item
  *
  * @author Paul Danyliuk
  */
-public class UserActivityItemHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
+public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
 
-    private final UserActivityItemBinding mBinding;
+    private final TaskItemBinding mBinding;
+    private final Task mTask;
     private final Context mContext;
 
-    public UserActivityItemHolder(UserActivityItemBinding binding) {
+    public TaskItemHolder(TaskItemBinding binding) {
         super(binding.getRoot());
         mBinding = binding;
         mContext = binding.getRoot().getContext();
+
+        // Instead of creating new instances of Tasks each time, we will mutate one object
+        mTask = new Task();
     }
 
     public void bind(int position) {
-        // Temporary
-        mBinding.setHost(this);
+        // todo: replace with actual data
+        mTask.title = "Activity #" + position;
+        mTask.interval = position + 1;
+        mTask.isRunning = position % 2 == 0;
 
-        mBinding.userActivityTitle.setText("Activity #" + position);
-        mBinding.userActivitySubtext.setText("Nag every " + (position + 1) + " minutes");
-        mBinding.userActivityIndicator.setImageDrawable(VectorDrawableCompat.create(
-                mContext.getResources(), R.drawable.ic_play, null
-        ));
-        mBinding.userActivityIndicator.setContentDescription(mContext.getString(R.string.a11y_start_activity));
+        mBinding.setHost(this);
+        mBinding.setTask(mTask);
     }
 
+    @SuppressWarnings("unused")
     public void onClick(View v) {
         Toast.makeText(mContext, "Tile clicked", Toast.LENGTH_SHORT).show();
     }
 
-    public void onMenuClick(View v) {
-        PopupMenu menu = new PopupMenu(mContext, mBinding.userActivityActionsButton);
+    @SuppressWarnings("unused")
+    public void onMenuClick(View actionMenuBtn) {
+        // The action menu icon is the view passed here, so anchor to it
+        PopupMenu menu = new PopupMenu(mContext, actionMenuBtn);
         menu.inflate(R.menu.menu_item_actions);
         menu.setOnMenuItemClickListener(this);
         menu.show();

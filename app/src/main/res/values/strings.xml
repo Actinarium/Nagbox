@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Nagbox</string>
 
     <string name="a11y_start_activity">Start activity</string>
@@ -22,5 +22,13 @@
     <string name="a11y_actions_menu">Actions menu</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+
+    <string name="status_string" translatable="false"><xliff:g id="status" example="Idle">%1$s</xliff:g> • <xliff:g id="nag_period" example="Nag every 5 minutes">%2$s</xliff:g></string>
+    <string name="status_idle">Idle</string>
+    <string name="status_running">Running</string>
+    <plurals name="nag_minutes">
+        <item quantity="one">Nag every minute</item>
+        <item quantity="other">Nag every <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes</item>
+    </plurals>
 
 </resources>

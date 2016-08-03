@@ -33,7 +33,7 @@
             android:paddingBottom="8dp"
             android:clipToPadding="false"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_user_activity"/>
+            tools:listitem="@layout/item_task"/>
 
     <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"

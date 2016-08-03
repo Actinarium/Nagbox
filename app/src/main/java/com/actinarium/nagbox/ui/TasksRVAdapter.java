@@ -20,29 +20,29 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import com.actinarium.nagbox.databinding.UserActivityItemBinding;
+import com.actinarium.nagbox.databinding.TaskItemBinding;
 
 /**
- * <p></p>
+ * A recycler view for a list of tasks
  *
  * @author Paul Danyliuk
  */
-public class UserActivityRVAdapter extends RecyclerView.Adapter<UserActivityItemHolder> {
+public class TasksRVAdapter extends RecyclerView.Adapter<TaskItemHolder> {
 
     private LayoutInflater mInflater;
 
-    public UserActivityRVAdapter(Context context) {
+    public TasksRVAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
     }
 
     @Override
-    public UserActivityItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        UserActivityItemBinding binding = UserActivityItemBinding.inflate(mInflater, parent, false);
-        return new UserActivityItemHolder(binding);
+    public TaskItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        TaskItemBinding binding = TaskItemBinding.inflate(mInflater, parent, false);
+        return new TaskItemHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(UserActivityItemHolder holder, int position) {
+    public void onBindViewHolder(TaskItemHolder holder, int position) {
         holder.bind(position);
     }
 
