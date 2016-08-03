@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.actinarium.nagbox;
+package com.actinarium.nagbox.ui;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.actinarium.nagbox;
+package com.actinarium.nagbox.ui;
 
+import android.content.Context;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
+import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.databinding.UserActivityItemBinding;
 
 /**
@@ -36,11 +38,13 @@ public class UserActivityItemHolder extends RecyclerView.ViewHolder {
 
     public void bind(int position) {
         // Temporary
+        final Context context = mBinding.userActivityIndicator.getContext();
         mBinding.userActivityTitle.setText("Activity #" + position);
         mBinding.userActivitySubtext.setText("Nag every " + (position + 1) + " minutes");
         mBinding.userActivityIndicator.setImageDrawable(VectorDrawableCompat.create(
-                mBinding.userActivityIndicator.getContext().getResources(), R.drawable.ic_play, null
+                context.getResources(), R.drawable.ic_play, null
         ));
+        mBinding.userActivityIndicator.setContentDescription(context.getString(R.string.a11y_start_activity));
     }
 
 }

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.actinarium.nagbox;
+package com.actinarium.nagbox.ui;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import com.actinarium.nagbox.R;
+import com.actinarium.nagbox.common.ViewUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ViewUtils.setUpToolbar(this, null, R.string.app_name, R.dimen.action_bar_elevation);
 
         RecyclerView rv = (RecyclerView) findViewById(R.id.recycler);
         rv.setAdapter(new UserActivityRVAdapter(this));

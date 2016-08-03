@@ -35,8 +35,8 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
+                android:layout_marginLeft="@dimen/edge_margin"
+                android:layout_marginStart="@dimen/edge_margin"
                 android:layout_marginRight="32dp"
                 android:layout_marginEnd="32dp"
                 tools:src="@drawable/ic_play"
@@ -78,7 +78,9 @@
                 android:layout_height="24dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginRight="@dimen/edge_margin"
+                android:layout_marginEnd="@dimen/edge_margin"
                 app:srcCompat="@drawable/ic_more"
                 tools:ignore="ContentDescription,RtlHardcoded"/>
 
