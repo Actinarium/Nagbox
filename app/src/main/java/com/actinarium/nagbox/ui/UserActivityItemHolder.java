@@ -19,7 +19,9 @@ package com.actinarium.nagbox.ui;
 import android.content.Context;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.databinding.UserActivityItemBinding;
@@ -29,34 +31,50 @@ import com.actinarium.nagbox.databinding.UserActivityItemBinding;
  *
  * @author Paul Danyliuk
  */
-public class UserActivityItemHolder extends RecyclerView.ViewHolder {
+public class UserActivityItemHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
 
     private final UserActivityItemBinding mBinding;
+    private final Context mContext;
 
     public UserActivityItemHolder(UserActivityItemBinding binding) {
         super(binding.getRoot());
         mBinding = binding;
+        mContext = binding.getRoot().getContext();
     }
 
     public void bind(int position) {
         // Temporary
         mBinding.setHost(this);
 
-        final Context context = mBinding.userActivityIndicator.getContext();
         mBinding.userActivityTitle.setText("Activity #" + position);
         mBinding.userActivitySubtext.setText("Nag every " + (position + 1) + " minutes");
         mBinding.userActivityIndicator.setImageDrawable(VectorDrawableCompat.create(
-                context.getResources(), R.drawable.ic_play, null
+                mContext.getResources(), R.drawable.ic_play, null
         ));
-        mBinding.userActivityIndicator.setContentDescription(context.getString(R.string.a11y_start_activity));
+        mBinding.userActivityIndicator.setContentDescription(mContext.getString(R.string.a11y_start_activity));
     }
 
     public void onClick(View v) {
-        Toast.makeText(mBinding.getRoot().getContext(), "Tile clicked", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, "Tile clicked", Toast.LENGTH_SHORT).show();
     }
 
     public void onMenuClick(View v) {
-        Toast.makeText(mBinding.getRoot().getContext(), "Menu clicked", Toast.LENGTH_SHORT).show();
+        PopupMenu menu = new PopupMenu(mContext, mBinding.userActivityActionsButton);
+        menu.inflate(R.menu.menu_item_actions);
+        menu.setOnMenuItemClickListener(this);
+        menu.show();
     }
 
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.action_edit:
+                Toast.makeText(mContext, "Edit clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_delete:
+                Toast.makeText(mContext, "Delete clicked", Toast.LENGTH_SHORT).show();
+                return true;
+        }
+        return false;
+    }
 }
