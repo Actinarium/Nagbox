@@ -19,6 +19,7 @@
 
     <string name="a11y_start_activity">Start activity</string>
     <string name="a11y_stop_activity">Stop activity</string>
+    <string name="a11y_actions_menu">Actions menu</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
 

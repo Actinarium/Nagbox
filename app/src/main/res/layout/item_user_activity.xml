@@ -21,14 +21,16 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data class="UserActivityItemBinding">
-
+        <variable name="host" type="com.actinarium.nagbox.ui.UserActivityItemHolder" />
     </data>
 
     <LinearLayout
-            android:orientation="horizontal"
+            style="@style/ClickableView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="72dp">
+            android:minHeight="72dp"
+            android:orientation="horizontal"
+            android:onClick="@{host.onClick}">
 
         <ImageView
                 android:id="@+id/user_activity_indicator"
@@ -73,16 +75,18 @@
         </LinearLayout>
 
         <ImageView
+                style="@style/ClickableView"
                 android:id="@+id/user_activity_actions_button"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginRight="@dimen/edge_margin"
-                android:layout_marginEnd="@dimen/edge_margin"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="@dimen/edge_margin_minus_8"
+                android:layout_marginEnd="@dimen/edge_margin_minus_8"
                 app:srcCompat="@drawable/ic_more"
-                tools:ignore="ContentDescription,RtlHardcoded"/>
+                android:scaleType="center"
+                android:contentDescription="@string/a11y_actions_menu"
+                android:onClick="@{host.onMenuClick}"
+                tools:ignore="RtlHardcoded"/>
 
     </LinearLayout>
 

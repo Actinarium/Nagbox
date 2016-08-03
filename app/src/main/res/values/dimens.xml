@@ -16,5 +16,6 @@
 
 <resources>
     <dimen name="edge_margin">16dp</dimen>
+    <dimen name="edge_margin_minus_8">8dp</dimen>
     <dimen name="action_bar_elevation">4dp</dimen>
 </resources>

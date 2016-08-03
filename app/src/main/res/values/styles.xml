@@ -24,4 +24,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ClickableView">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
+
 </resources>
