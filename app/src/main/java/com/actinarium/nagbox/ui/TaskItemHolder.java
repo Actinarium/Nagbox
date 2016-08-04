@@ -50,7 +50,7 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
         // todo: replace with actual data
         mTask.title = "Activity #" + position;
         mTask.interval = position + 1;
-        mTask.isRunning = position % 2 == 0;
+        mTask.flags = position % 2;
 
         mBinding.setHost(this);
         mBinding.setTask(mTask);

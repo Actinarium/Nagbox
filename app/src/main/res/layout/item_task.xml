@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:minHeight="88dp"
             android:orientation="horizontal"
-            android:onClick="@{host.onClick}">
+            android:onClick="@{host::onClick}">
 
         <ImageView
                 android:layout_width="24dp"
@@ -41,8 +41,8 @@
                 android:layout_marginStart="@dimen/edge_margin"
                 android:layout_marginRight="32dp"
                 android:layout_marginEnd="32dp"
-                android:src="@{task.isRunning ? @drawable/ic_pause : @drawable/ic_play}"
-                android:contentDescription="@{task.isRunning ? @string/a11y_stop_activity : @string/a11y_start_activity}"
+                android:src="@{task.isActive ? @drawable/ic_pause : @drawable/ic_play}"
+                android:contentDescription="@{task.isActive ? @string/a11y_stop_activity : @string/a11y_start_activity}"
                 tools:src="@drawable/ic_play"
                 tools:ignore="ContentDescription,RtlHardcoded"/>
 
@@ -82,7 +82,7 @@
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
                     app:lastLineDescent="4dp"
-                    android:text="@{task.isRunning ? @string/status_running : @string/status_idle}"
+                    android:text="@{task.isActive ? @string/status_running : @string/status_idle}"
                     tools:text="Idle"/>
 
         </LinearLayout>
@@ -97,7 +97,7 @@
                 app:srcCompat="@drawable/ic_more"
                 android:scaleType="center"
                 android:contentDescription="@string/a11y_actions_menu"
-                android:onClick="@{host.onMenuClick}"
+                android:onClick="@{host::onMenuClick}"
                 tools:ignore="RtlHardcoded"/>
 
     </LinearLayout>

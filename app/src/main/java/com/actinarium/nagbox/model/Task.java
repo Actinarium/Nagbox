@@ -23,14 +23,35 @@ package com.actinarium.nagbox.model;
  */
 public class Task {
 
-    public String title;
+    /**
+     * Indicates that this task is active, and alarm must be scheduled for this task
+     */
+    public static final int FLAG_ACTIVE = 1;
+    /**
+     * Indicates that this task already fired and was rescheduled, but the user haven't dismissed the notification yet,
+     * so it should be included upon the next alarm.
+     */
+    public static final int FLAG_NOT_DISMISSED = 2;
 
+
+    public String title;
     /**
      * Interval in minutes
      */
     public int interval;
+    /**
+     * Timestamp (msec) when this task must fire next time. Holds actual value only when {@link #isActive()} is
+     * <code>true</code>, otherwise it can be anything.
+     */
+    public long nextFireAt;
+    /**
+     * Holds status flags for this task
+     *
+     * @see #FLAG_ACTIVE
+     * @see #FLAG_NOT_DISMISSED
+     */
+    public int flags;
 
-    public boolean isRunning;
 
     public Task() {}
 
@@ -42,7 +63,11 @@ public class Task {
     public Task(Task source) {
         this.title = source.title;
         this.interval = source.interval;
-        this.isRunning = source.isRunning;
+        this.flags = source.flags;
+    }
+
+    public boolean isActive() {
+        return (flags & FLAG_ACTIVE) != 0;
     }
 
 }
