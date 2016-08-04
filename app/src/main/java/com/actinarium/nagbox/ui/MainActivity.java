@@ -16,13 +16,14 @@
 
 package com.actinarium.nagbox.ui;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
+import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
 
 public class MainActivity extends AppCompatActivity implements TaskItemHolder.Host, EditTaskDialogFragment.Host {
@@ -30,12 +31,16 @@ public class MainActivity extends AppCompatActivity implements TaskItemHolder.Ho
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ViewUtils.setUpToolbar(this, null, R.string.app_name, R.dimen.action_bar_elevation);
+        MainActivityBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        binding.setController(this);
+        ViewUtils.setUpToolbar(this, binding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
 
-        RecyclerView rv = (RecyclerView) findViewById(R.id.recycler);
-        rv.setAdapter(new TasksRVAdapter(this, this));
-        rv.setHasFixedSize(true);
+        binding.recycler.setAdapter(new TasksRVAdapter(this, this));
+        binding.recycler.setHasFixedSize(true);
+    }
+
+    public void onCreateTask() {
+        showCreateEditDialog(null);
     }
 
     @Override

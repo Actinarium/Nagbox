@@ -23,6 +23,7 @@
     <data class="TaskItemBinding">
         <variable name="host" type="com.actinarium.nagbox.ui.TaskItemHolder" />
         <variable name="task" type="com.actinarium.nagbox.model.Task" />
+        <import type="com.actinarium.aligned.R" />
     </data>
 
     <LinearLayout
@@ -34,6 +35,7 @@
             android:onClick="@{host::onClick}">
 
         <ImageView
+                android:id="@+id/icon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginTop="16dp"
@@ -41,7 +43,6 @@
                 android:layout_marginStart="@dimen/edge_margin"
                 android:layout_marginRight="32dp"
                 android:layout_marginEnd="32dp"
-                android:src="@{task.isActive ? @drawable/ic_pause : @drawable/ic_play}"
                 android:contentDescription="@{task.isActive ? @string/a11y_stop_activity : @string/a11y_start_activity}"
                 tools:src="@drawable/ic_play"
                 tools:ignore="ContentDescription,RtlHardcoded"/>
@@ -71,8 +72,8 @@
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
                     app:lastLineDescent="4dp"
-                    android:text="@{@plurals/nag_minutes(task.interval, task.interval)}"
-                    tools:text="Nag each 5 minutes"/>
+                    android:text="@{task.isActive ? @string/status_running : @string/status_idle}"
+                    tools:text="Idle"/>
 
             <com.actinarium.aligned.TextView
                     android:layout_width="match_parent"
@@ -82,8 +83,8 @@
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
                     app:lastLineDescent="4dp"
-                    android:text="@{task.isActive ? @string/status_running : @string/status_idle}"
-                    tools:text="Idle"/>
+                    android:text="@{@plurals/nag_minutes(task.interval, task.interval)}"
+                    tools:text="Nag each 5 minutes"/>
 
         </LinearLayout>
 

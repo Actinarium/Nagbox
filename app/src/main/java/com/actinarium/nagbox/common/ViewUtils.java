@@ -16,7 +16,6 @@
 
 package com.actinarium.nagbox.common;
 
-import android.app.Activity;
 import android.support.annotation.DimenRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -44,17 +43,10 @@ public final class ViewUtils {
      * @param elevation Dimension resource, can be 0 for no elevation
      * @return Decorated action bar, in case any other changes are required
      */
-    public static ActionBar setUpToolbar(@NonNull Activity activity, View rootView, @StringRes int title, @DimenRes int elevation) {
-        final Toolbar toolbar;
-        if (rootView != null) {
-            toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
-        } else {
-            toolbar = (Toolbar) activity.findViewById(R.id.toolbar);
-        }
-
-        AppCompatActivity compatActivity = (AppCompatActivity) activity;
-        compatActivity.setSupportActionBar(toolbar);
-        final ActionBar actionBar = compatActivity.getSupportActionBar();
+    public static ActionBar setUpToolbar(@NonNull AppCompatActivity activity, View rootView, @StringRes int title, @DimenRes int elevation) {
+        final Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        activity.setSupportActionBar(toolbar);
+        final ActionBar actionBar = activity.getSupportActionBar();
         if (actionBar == null) {
             throw new AssertionError("Support ActionBar is null for unknown reason");
         }

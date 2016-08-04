@@ -56,6 +56,9 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
 
         mBinding.setHost(this);
         mBinding.setTask(mTask);
+
+//         Have to do this because data binding doesn't want to play nice with vector drawable compat
+        mBinding.icon.setImageResource(mTask.isActive() ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 
     @SuppressWarnings("unused")
