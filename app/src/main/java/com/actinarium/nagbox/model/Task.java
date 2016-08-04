@@ -16,12 +16,15 @@
 
 package com.actinarium.nagbox.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * An entity object for a task
  *
  * @author Paul Danyliuk
  */
-public class Task {
+public class Task implements Parcelable {
 
     /**
      * Indicates that this task is active, and alarm must be scheduled for this task
@@ -33,12 +36,14 @@ public class Task {
      */
     public static final int FLAG_NOT_DISMISSED = 2;
 
+    public static final int DEFAULT_INTERVAL = 5;
+
 
     public String title;
     /**
      * Interval in minutes
      */
-    public int interval;
+    public int interval = DEFAULT_INTERVAL;
     /**
      * Timestamp (msec) when this task must fire next time. Holds actual value only when {@link #isActive()} is
      * <code>true</code>, otherwise it can be anything.
@@ -64,10 +69,62 @@ public class Task {
         this.title = source.title;
         this.interval = source.interval;
         this.flags = source.flags;
+        this.nextFireAt = source.nextFireAt;
     }
 
     public boolean isActive() {
         return (flags & FLAG_ACTIVE) != 0;
     }
 
+    // Getters/setters for 2-way data binding ----------------------------
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getIntervalAsString() {
+        return Integer.toString(interval);
+    }
+
+    public void setIntervalAsString(String value) {
+        interval = value.isEmpty() ? 0 : Integer.parseInt(value);
+    }
+
+    // Auto-generated Parcelable stuff -----------------------------------
+
+    protected Task(Parcel in) {
+        title = in.readString();
+        interval = in.readInt();
+        nextFireAt = in.readLong();
+        flags = in.readInt();
+    }
+
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel in) {
+            return new Task(in);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(title);
+        parcel.writeInt(interval);
+        parcel.writeLong(nextFireAt);
+        parcel.writeInt(flags);
+    }
 }

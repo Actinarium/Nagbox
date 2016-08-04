@@ -17,12 +17,15 @@
 package com.actinarium.nagbox.ui;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
+import com.actinarium.nagbox.model.Task;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TaskItemHolder.Host, EditTaskDialogFragment.Host {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +34,41 @@ public class MainActivity extends AppCompatActivity {
         ViewUtils.setUpToolbar(this, null, R.string.app_name, R.dimen.action_bar_elevation);
 
         RecyclerView rv = (RecyclerView) findViewById(R.id.recycler);
-        rv.setAdapter(new TasksRVAdapter(this));
+        rv.setAdapter(new TasksRVAdapter(this, this));
         rv.setHasFixedSize(true);
     }
 
+    @Override
+    public void onEditTask(Task task) {
+        showCreateEditDialog(task);
+    }
+
+    @Override
+    public void onDeleteTask(Task task) {
+        // todo: service call to delete the task
+        // todo: show snackbar to undo
+        Toast.makeText(MainActivity.this, "Task almost deleted", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void saveNewTask(Task task) {
+        // todo: service call to create the task
+        Toast.makeText(MainActivity.this, "New task almost saved", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void saveEditedTask(Task task) {
+        // todo: service call to update the task
+        Toast.makeText(MainActivity.this, "Edited task almost saved", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Show the edit/create task dialog. The dialog will make the appropriate service call on its submit
+     *
+     * @param task task to edit, or <code>null</code> to make a dialog for creating a new task
+     */
+    private void showCreateEditDialog(@Nullable Task task) {
+        EditTaskDialogFragment fragment = EditTaskDialogFragment.newInstance(task);
+        fragment.show(getSupportFragmentManager(), EditTaskDialogFragment.TAG);
+    }
 }

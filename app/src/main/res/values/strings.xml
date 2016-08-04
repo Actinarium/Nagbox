@@ -31,4 +31,13 @@
         <item quantity="other">Nag every <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes</item>
     </plurals>
 
+    <string name="dialog_new_task">New task</string>
+    <string name="dialog_edit_task">Edit task</string>
+    <string name="dialog_task_title">Nag text</string>
+    <string name="dialog_task_interval">Nag interval (minutes)</string>
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_empty_title">Nag text cannot be empty</string>
+    <string name="dialog_invalid_interval">Interval cannot be 0</string>
+
 </resources>

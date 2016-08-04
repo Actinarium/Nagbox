@@ -36,11 +36,13 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
     private final TaskItemBinding mBinding;
     private final Task mTask;
     private final Context mContext;
+    private final Host mHost;
 
-    public TaskItemHolder(TaskItemBinding binding) {
+    public TaskItemHolder(TaskItemBinding binding, Host host) {
         super(binding.getRoot());
         mBinding = binding;
         mContext = binding.getRoot().getContext();
+        mHost = host;
 
         // Instead of creating new instances of Tasks each time, we will mutate one object
         mTask = new Task();
@@ -74,12 +76,22 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
     public boolean onMenuItemClick(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
-                Toast.makeText(mContext, "Edit clicked", Toast.LENGTH_SHORT).show();
+                // Passing the copy of this mutable task to be on the safe side
+                mHost.onEditTask(new Task(mTask));
                 return true;
             case R.id.action_delete:
-                Toast.makeText(mContext, "Delete clicked", Toast.LENGTH_SHORT).show();
+                // Since we have a Context here, we could call the service directly. But let's keep things consistent.
+                mHost.onDeleteTask(new Task(mTask));
                 return true;
         }
         return false;
+    }
+
+    /**
+     * Callbacks to the host (i.e. activity) to handle things triggered from this view item
+     */
+    public interface Host {
+        void onEditTask(Task task);
+        void onDeleteTask(Task task);
     }
 }

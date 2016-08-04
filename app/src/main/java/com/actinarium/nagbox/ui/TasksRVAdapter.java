@@ -30,15 +30,17 @@ import com.actinarium.nagbox.databinding.TaskItemBinding;
 public class TasksRVAdapter extends RecyclerView.Adapter<TaskItemHolder> {
 
     private LayoutInflater mInflater;
+    private TaskItemHolder.Host mHost;
 
-    public TasksRVAdapter(Context context) {
+    public TasksRVAdapter(Context context, TaskItemHolder.Host host) {
         mInflater = LayoutInflater.from(context);
+        mHost = host;
     }
 
     @Override
     public TaskItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         TaskItemBinding binding = TaskItemBinding.inflate(mInflater, parent, false);
-        return new TaskItemHolder(binding);
+        return new TaskItemHolder(binding, mHost);
     }
 
     @Override
