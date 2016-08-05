@@ -22,6 +22,8 @@
     <string name="a11y_actions_menu">Actions menu</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="deleted_message">Task “<xliff:g id="task_title" example="Playing games">%1$s</xliff:g>” deleted</string>
+    <string name="undo">Undo</string>
 
     <string name="status_string" translatable="false"><xliff:g id="status" example="Idle">%1$s</xliff:g> • <xliff:g id="nag_period" example="Nag every 5 minutes">%2$s</xliff:g></string>
     <string name="status_idle">Idle</string>

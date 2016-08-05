@@ -24,7 +24,7 @@
         <variable name="controller" type="com.actinarium.nagbox.ui.MainActivity" />
     </data>
 
-    <FrameLayout
+    <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:context=".ui.MainActivity">
@@ -55,12 +55,11 @@
                 android:layout_gravity="bottom|end"
                 app:fabSize="normal"
                 app:srcCompat="@drawable/ic_add"
-                app:backgroundTint="@color/accentLighter"
                 android:layout_marginEnd="@dimen/fab_margin_end"
                 android:layout_marginRight="@dimen/fab_margin_end"
                 android:layout_marginBottom="@dimen/fab_margin_bottom"
                 android:onClick="@{() -> controller.onCreateTask()}"/>
 
-    </FrameLayout>
+    </android.support.design.widget.CoordinatorLayout>
 
 </layout>

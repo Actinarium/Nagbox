@@ -18,6 +18,6 @@
 <resources>
     <color name="primary">#00BCD4</color>
     <color name="primaryDark">#0097A7</color>
-    <color name="accent">#ffab00</color>
-    <color name="accentLighter">#FFC400</color>
+    <color name="accent">#FFC400</color>
+    <color name="accentDarker">#ffab00</color>
 </resources>

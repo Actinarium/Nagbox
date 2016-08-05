@@ -19,7 +19,9 @@ package com.actinarium.nagbox.ui;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
@@ -28,15 +30,17 @@ import com.actinarium.nagbox.model.Task;
 
 public class MainActivity extends AppCompatActivity implements TaskItemHolder.Host, EditTaskDialogFragment.Host {
 
+    private MainActivityBinding mBinding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MainActivityBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        binding.setController(this);
-        ViewUtils.setUpToolbar(this, binding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mBinding.setController(this);
+        ViewUtils.setUpToolbar(this, mBinding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
 
-        binding.recycler.setAdapter(new TasksRVAdapter(this, this));
-        binding.recycler.setHasFixedSize(true);
+        mBinding.recycler.setAdapter(new TasksRVAdapter(this, this));
+        mBinding.recycler.setHasFixedSize(true);
     }
 
     public void onCreateTask() {
@@ -49,10 +53,22 @@ public class MainActivity extends AppCompatActivity implements TaskItemHolder.Ho
     }
 
     @Override
-    public void onDeleteTask(Task task) {
+    public void onDeleteTask(final Task task) {
         // todo: service call to delete the task
-        // todo: show snackbar to undo
         Toast.makeText(MainActivity.this, "Task almost deleted", Toast.LENGTH_SHORT).show();
+        Snackbar.make(mBinding.getRoot(), getString(R.string.deleted_message, task.title), Snackbar.LENGTH_SHORT)
+                .setAction(R.string.undo, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        restoreTask(task);
+                    }
+                })
+                .show();
+    }
+
+    public void restoreTask(Task task) {
+        // todo: service call to restore the task
+        Toast.makeText(MainActivity.this, "Task almost deleted but then restored", Toast.LENGTH_SHORT).show();
     }
 
     @Override
