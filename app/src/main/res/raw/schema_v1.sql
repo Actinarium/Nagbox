@@ -3,4 +3,4 @@ CREATE TABLE tasks (
     "title" TEXT NOT NULL,
     "interval" INTEGER NOT NULL,
     "flags" INTEGER NOT NULL,
-    "nextFireAt" INTEGER)
+    "next_fire_at" INTEGER)

@@ -16,21 +16,31 @@
 
 package com.actinarium.nagbox.ui;
 
+import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
+import com.actinarium.nagbox.database.NagboxContract.TaskProjection;
+import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
 
-public class MainActivity extends AppCompatActivity implements TaskItemHolder.Host, EditTaskDialogFragment.Host {
+public class MainActivity extends AppCompatActivity
+        implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int LOADER_TASKS = 1;
 
     private MainActivityBinding mBinding;
+    private TasksRVAdapter mTasksAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +49,11 @@ public class MainActivity extends AppCompatActivity implements TaskItemHolder.Ho
         mBinding.setController(this);
         ViewUtils.setUpToolbar(this, mBinding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
 
-        mBinding.recycler.setAdapter(new TasksRVAdapter(this, this));
+        mTasksAdapter = new TasksRVAdapter(this, this);
+        mBinding.recycler.setAdapter(mTasksAdapter);
         mBinding.recycler.setHasFixedSize(true);
+
+        getSupportLoaderManager().initLoader(LOADER_TASKS, null, this);
     }
 
     public void onCreateTask() {
@@ -91,5 +104,28 @@ public class MainActivity extends AppCompatActivity implements TaskItemHolder.Ho
     private void showCreateEditDialog(@Nullable Task task) {
         EditTaskDialogFragment fragment = EditTaskDialogFragment.newInstance(task);
         fragment.show(getSupportFragmentManager(), EditTaskDialogFragment.TAG);
+    }
+
+    // Loader callbacks -----------------------------------------------------
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                this,
+                TasksTable.CONTENT_URI,
+                TaskProjection.COLUMNS,
+                null, null, null
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        // todo: set loaded data into rv adapter
+        Toast.makeText(MainActivity.this, data.getCount() + " tasks loaded", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // todo: replace rv adapter cursor with null
     }
 }

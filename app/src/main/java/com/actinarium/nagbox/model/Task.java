@@ -16,8 +16,10 @@
 
 package com.actinarium.nagbox.model;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 
 /**
  * An entity object for a task
@@ -76,6 +78,34 @@ public class Task implements Parcelable {
 
     public boolean isActive() {
         return (flags & FLAG_ACTIVE) != 0;
+    }
+
+    // Export into ContentValues for insert/update ops -------------------
+
+    /**
+     * Get {@link ContentValues} for this model to feed it to create/update operations
+     *
+     * @return <code>ContentValues</code> with title, interval, and flags
+     * @see #toContentValuesOnStatusChange()
+     */
+    public ContentValues toContentValues() {
+        ContentValues values = new ContentValues(3);
+        values.put(TasksTable.COL_TITLE, title);
+        values.put(TasksTable.COL_INTERVAL, interval);
+        values.put(TasksTable.COL_FLAGS, flags);
+        return values;
+    }
+
+    /**
+     * Get {@link ContentValues} for this model when its status (flags, next fire time) needs to be updated
+     *
+     * @return <code>ContentValues</code> with flags and nextFireAt
+     */
+    public ContentValues toContentValuesOnStatusChange() {
+        ContentValues values = new ContentValues(2);
+        values.put(TasksTable.COL_FLAGS, flags);
+        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
+        return values;
     }
 
     // Getters/setters for 2-way data binding ----------------------------

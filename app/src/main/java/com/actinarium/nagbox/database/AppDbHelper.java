@@ -23,6 +23,7 @@ import android.support.annotation.RawRes;
 import android.text.TextUtils;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ReaderUtils;
+import com.actinarium.nagbox.model.Task;
 
 /**
  * A standard DB open helper class, as per Udacity course / Android docs. Singleton.
@@ -59,6 +60,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         execFile(db, R.raw.schema_v1);
+        importInitialData(db);
     }
 
     @Override
@@ -77,6 +79,18 @@ public class AppDbHelper extends SQLiteOpenHelper {
         for (String query : queries) {
             db.execSQL(query);
         }
+    }
+
+    /**
+     * Import starter data into the database
+     *
+     * @param db Database instance
+     */
+    private void importInitialData(SQLiteDatabase db) {
+        // todo: temporary. Read items from resources, insert using dbops
+        Task initialTask = new Task();
+        initialTask.title = "Browsing social networks";
+        db.insert(NagboxContract.TasksTable.TABLE_NAME, null, initialTask.toContentValues());
     }
 
 }
