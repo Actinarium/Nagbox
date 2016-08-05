@@ -89,7 +89,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
     private void importInitialData(SQLiteDatabase db) {
         // todo: temporary. Read items from resources, insert using dbops
         Task initialTask = new Task();
-        initialTask.title = "Browsing social networks";
+        initialTask.title = "Stop wasting time";
         db.insert(NagboxContract.TasksTable.TABLE_NAME, null, initialTask.toContentValues());
     }
 

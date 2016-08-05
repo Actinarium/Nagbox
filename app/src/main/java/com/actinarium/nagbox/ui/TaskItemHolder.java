@@ -17,12 +17,14 @@
 package com.actinarium.nagbox.ui;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
+import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.TaskItemBinding;
 import com.actinarium.nagbox.model.Task;
 
@@ -42,22 +44,24 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
         super(binding.getRoot());
         mBinding = binding;
         mContext = binding.getRoot().getContext();
+        mBinding.setController(this);
         mHost = host;
 
         // Instead of creating new instances of Tasks each time, we will mutate one object
         mTask = new Task();
     }
 
-    public void bind(int position) {
-        // todo: replace with actual data
-        mTask.title = "Activity #" + position;
-        mTask.interval = position + 1;
-        mTask.flags = position % 2;
-
-        mBinding.setHost(this);
+    /**
+     * Bind this view holder to the data from the cursor at given position using provided projection mapping.
+     *
+     * @param cursor     Cursor to bind data from
+     * @param projection Projection object to map the cursor to the model object
+     */
+    public void bind(Cursor cursor, Projection<Task> projection) {
+        projection.mapCursorToModel(cursor, mTask);
         mBinding.setTask(mTask);
 
-//         Have to do this because data binding doesn't want to play nice with vector drawable compat
+        // Have to do this because data binding doesn't want to play nicely with vector drawable compat
         mBinding.icon.setImageResource(mTask.isActive() ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 
@@ -95,6 +99,7 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
      */
     public interface Host {
         void onEditTask(Task task);
+
         void onDeleteTask(Task task);
     }
 }

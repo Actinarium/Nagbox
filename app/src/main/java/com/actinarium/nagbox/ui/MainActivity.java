@@ -29,8 +29,9 @@ import android.view.View;
 import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
-import com.actinarium.nagbox.database.NagboxContract.TaskProjection;
+import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
+import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
 
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity
         implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int LOADER_TASKS = 1;
+    private static final Projection<Task> PROJECTION = NagboxContract.TASK_PROJECTION;
 
     private MainActivityBinding mBinding;
     private TasksRVAdapter mTasksAdapter;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity
         ViewUtils.setUpToolbar(this, mBinding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
 
         mTasksAdapter = new TasksRVAdapter(this, this);
+        mTasksAdapter.setTaskProjection(PROJECTION);
         mBinding.recycler.setAdapter(mTasksAdapter);
         mBinding.recycler.setHasFixedSize(true);
 
@@ -113,19 +116,18 @@ public class MainActivity extends AppCompatActivity
         return new CursorLoader(
                 this,
                 TasksTable.CONTENT_URI,
-                TaskProjection.COLUMNS,
+                PROJECTION.getProjection(),
                 null, null, null
         );
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        // todo: set loaded data into rv adapter
-        Toast.makeText(MainActivity.this, data.getCount() + " tasks loaded", Toast.LENGTH_SHORT).show();
+       mTasksAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        // todo: replace rv adapter cursor with null
+        mTasksAdapter.swapCursor(null);
     }
 }

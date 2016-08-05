@@ -19,6 +19,7 @@ package com.actinarium.nagbox.database;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.annotation.Nullable;
 import com.actinarium.nagbox.model.Task;
 
 /**
@@ -56,11 +57,14 @@ public final class NagboxContract {
 
     // Projections ---------------------------------------
 
-    public static final class TaskProjection {
+    public static final TaskProjection TASK_PROJECTION = new TaskProjection();
 
-        private TaskProjection() {}
+    /**
+     * A projection to get all Task fields.
+     */
+    public static final class TaskProjection implements Projection<Task> {
 
-        public static final String[] COLUMNS = {
+        private static final String[] COLUMNS = {
                 TasksTable._ID,
                 TasksTable.COL_TITLE,
                 TasksTable.COL_INTERVAL,
@@ -68,14 +72,30 @@ public final class NagboxContract {
                 TasksTable.COL_NEXT_FIRE_AT
         };
 
-        public static void fillWithData(Task task, Cursor cursor) {
+        @Override
+        public String[] getProjection() {
+            return COLUMNS;
+        }
+
+        @Override
+        public Task mapCursorToModel(Cursor cursor, @Nullable Task task) {
+            if (task == null) {
+                task = new Task();
+            }
+
             task.id = cursor.getLong(0);
             task.title = cursor.getString(1);
             task.interval = cursor.getInt(2);
             task.flags = cursor.getInt(3);
             task.nextFireAt = cursor.getLong(4);
+
+            return task;
         }
 
+        @Override
+        public long getId(Cursor cursor) {
+            return cursor.getLong(0);
+        }
     }
 
 }

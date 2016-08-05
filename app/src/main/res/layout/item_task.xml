@@ -21,7 +21,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data class="TaskItemBinding">
-        <variable name="host" type="com.actinarium.nagbox.ui.TaskItemHolder" />
+        <variable name="controller" type="com.actinarium.nagbox.ui.TaskItemHolder" />
         <variable name="task" type="com.actinarium.nagbox.model.Task" />
         <import type="com.actinarium.aligned.R" />
     </data>
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:minHeight="88dp"
             android:orientation="horizontal"
-            android:onClick="@{host::onClick}">
+            android:onClick="@{controller::onClick}">
 
         <ImageView
                 android:id="@+id/icon"
@@ -98,7 +98,7 @@
                 app:srcCompat="@drawable/ic_more"
                 android:scaleType="center"
                 android:contentDescription="@string/a11y_actions_menu"
-                android:onClick="@{host::onMenuClick}"
+                android:onClick="@{controller::onMenuClick}"
                 tools:ignore="RtlHardcoded"/>
 
     </LinearLayout>
