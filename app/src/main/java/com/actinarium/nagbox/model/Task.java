@@ -39,16 +39,12 @@ public class Task implements Parcelable {
     public static final int DEFAULT_INTERVAL = 5;
 
 
+    public long id;
     public String title;
     /**
      * Interval in minutes
      */
     public int interval = DEFAULT_INTERVAL;
-    /**
-     * Timestamp (msec) when this task must fire next time. Holds actual value only when {@link #isActive()} is
-     * <code>true</code>, otherwise it can be anything.
-     */
-    public long nextFireAt;
     /**
      * Holds status flags for this task
      *
@@ -56,6 +52,11 @@ public class Task implements Parcelable {
      * @see #FLAG_NOT_DISMISSED
      */
     public int flags;
+    /**
+     * Timestamp (msec) when this task must fire next time. Holds actual value only when {@link #isActive()} is
+     * <code>true</code>, otherwise it can be anything.
+     */
+    public long nextFireAt;
 
 
     public Task() {}
@@ -66,6 +67,7 @@ public class Task implements Parcelable {
      * @param source instance to copy fields from
      */
     public Task(Task source) {
+        this.id = source.id;
         this.title = source.title;
         this.interval = source.interval;
         this.flags = source.flags;
@@ -97,10 +99,11 @@ public class Task implements Parcelable {
     // Auto-generated Parcelable stuff -----------------------------------
 
     protected Task(Parcel in) {
+        id = in.readLong();
         title = in.readString();
         interval = in.readInt();
-        nextFireAt = in.readLong();
         flags = in.readInt();
+        nextFireAt = in.readLong();
     }
 
     public static final Creator<Task> CREATOR = new Creator<Task>() {
@@ -122,9 +125,10 @@ public class Task implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(id);
         parcel.writeString(title);
         parcel.writeInt(interval);
-        parcel.writeLong(nextFireAt);
         parcel.writeInt(flags);
+        parcel.writeLong(nextFireAt);
     }
 }
