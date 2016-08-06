@@ -16,7 +16,14 @@
 
 package com.actinarium.nagbox.common;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
+import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v7.app.ActionBar;
@@ -43,7 +50,7 @@ public final class ViewUtils {
      * @param elevation Dimension resource, can be 0 for no elevation
      * @return Decorated action bar, in case any other changes are required
      */
-    public static ActionBar setUpToolbar(@NonNull AppCompatActivity activity, View rootView, @StringRes int title, @DimenRes int elevation) {
+    public static ActionBar setupToolbar(@NonNull AppCompatActivity activity, View rootView, @StringRes int title, @DimenRes int elevation) {
         final Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         activity.setSupportActionBar(toolbar);
         final ActionBar actionBar = activity.getSupportActionBar();
@@ -58,6 +65,27 @@ public final class ViewUtils {
             actionBar.setElevation(activity.getResources().getDimension(elevation));
         }
         return actionBar;
+    }
+
+    /**
+     * Set custom icon and color for recents screen card
+     *
+     * @param activity Activity to configure
+     * @param colorRes Color resource for recents screen card title
+     * @param icon     Bitmap drawable resource to draw into recents screen card title
+     */
+    public static void setupRecentsIcon(Activity activity, @ColorRes int colorRes, @DrawableRes int icon) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return;
+        }
+
+        //noinspection deprecation
+        int color = activity.getResources().getColor(colorRes);
+        Bitmap bm = BitmapFactory.decodeResource(activity.getResources(), icon);
+        ActivityManager.TaskDescription td = new ActivityManager.TaskDescription(null, bm, color);
+
+        activity.setTaskDescription(td);
+        bm.recycle();
     }
 
 }

@@ -26,8 +26,8 @@
     <string name="undo">Undo</string>
 
     <string name="status_string" translatable="false"><xliff:g id="status" example="Idle">%1$s</xliff:g> • <xliff:g id="nag_period" example="Nag every 5 minutes">%2$s</xliff:g></string>
-    <string name="status_idle">Idle</string>
-    <string name="status_running">Running</string>
+    <string name="status_idle">Not active. Tap to activate.</string>
+    <string name="status_running">Active. Tap to deactivate.</string>
     <plurals name="nag_minutes">
         <item quantity="one">Nag every minute</item>
         <item quantity="other">Nag every <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes</item>
@@ -40,6 +40,6 @@
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_empty_title">Nag text cannot be empty</string>
-    <string name="dialog_invalid_interval">Interval cannot be 0</string>
+    <string name="dialog_invalid_interval">Interval cannot be zero</string>
 
 </resources>

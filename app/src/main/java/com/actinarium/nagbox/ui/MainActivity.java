@@ -50,7 +50,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         mBinding.setController(this);
-        ViewUtils.setUpToolbar(this, mBinding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
+        ViewUtils.setupToolbar(this, mBinding.getRoot(), R.string.app_name, R.dimen.action_bar_elevation);
+        ViewUtils.setupRecentsIcon(this, R.color.primaryDark, R.mipmap.ic_launcher);
 
         mTasksAdapter = new TasksRVAdapter(this, this);
         mTasksAdapter.setTaskProjection(PROJECTION);
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity
     public void onToggleTaskStatus(Task task) {
         task.setIsActive(!task.isActive());
         if (task.isActive()) {
+            // Schedule next fire time
             task.nextFireAt = System.currentTimeMillis() + task.interval * DateUtils.MINUTE_IN_MILLIS;
         }
         NagboxService.updateTaskStatus(this, task);
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDeleteTask(final Task task) {
         NagboxService.deleteTask(this, task.id);
-        Snackbar.make(mBinding.getRoot(), getString(R.string.deleted_message, task.title), Snackbar.LENGTH_SHORT)
+        Snackbar.make(mBinding.getRoot(), getString(R.string.deleted_message, task.title), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
