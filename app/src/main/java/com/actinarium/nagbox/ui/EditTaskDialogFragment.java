@@ -154,7 +154,7 @@ public class EditTaskDialogFragment extends DialogFragment {
     private boolean validateForm() {
         boolean isTitleError = false;
         boolean isIntervalError = false;
-        if (mTask.title.trim().isEmpty()) {
+        if (mTask.title == null || mTask.title.trim().isEmpty()) {
             mBinding.taskTitleInput.setError(getString(R.string.dialog_empty_title));
             isTitleError = true;
         }

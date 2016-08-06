@@ -25,8 +25,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateUtils;
 import android.view.View;
-import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
 import com.actinarium.nagbox.database.NagboxContract;
@@ -34,6 +34,7 @@ import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
+import com.actinarium.nagbox.service.NagboxService;
 
 public class MainActivity extends AppCompatActivity
         implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
@@ -59,6 +60,15 @@ public class MainActivity extends AppCompatActivity
         getSupportLoaderManager().initLoader(LOADER_TASKS, null, this);
     }
 
+    @Override
+    public void onToggleTaskStatus(Task task) {
+        task.setIsActive(!task.isActive());
+        if (task.isActive()) {
+            task.nextFireAt = System.currentTimeMillis() + task.interval * DateUtils.MINUTE_IN_MILLIS;
+        }
+        NagboxService.updateTaskStatus(this, task);
+    }
+
     public void onCreateTask() {
         showCreateEditDialog(null);
     }
@@ -70,8 +80,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDeleteTask(final Task task) {
-        // todo: service call to delete the task
-        Toast.makeText(MainActivity.this, "Task almost deleted", Toast.LENGTH_SHORT).show();
+        NagboxService.deleteTask(this, task.id);
         Snackbar.make(mBinding.getRoot(), getString(R.string.deleted_message, task.title), Snackbar.LENGTH_SHORT)
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
@@ -83,20 +92,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void restoreTask(Task task) {
-        // todo: service call to restore the task
-        Toast.makeText(MainActivity.this, "Task almost deleted but then restored", Toast.LENGTH_SHORT).show();
+        NagboxService.restoreTask(this, task);
     }
 
     @Override
     public void saveNewTask(Task task) {
-        // todo: service call to create the task
-        Toast.makeText(MainActivity.this, "New task almost saved", Toast.LENGTH_SHORT).show();
+        NagboxService.createTask(this, task);
     }
 
     @Override
     public void saveEditedTask(Task task) {
-        // todo: service call to update the task
-        Toast.makeText(MainActivity.this, "Edited task almost saved", Toast.LENGTH_SHORT).show();
+        NagboxService.updateTask(this, task);
     }
 
     /**

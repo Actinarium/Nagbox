@@ -22,7 +22,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.TaskItemBinding;
@@ -67,7 +66,8 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
 
     @SuppressWarnings("unused")
     public void onClick(View v) {
-        Toast.makeText(mContext, "Tile clicked", Toast.LENGTH_SHORT).show();
+        // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm
+        mHost.onToggleTaskStatus(new Task(mTask));
     }
 
     @SuppressWarnings("unused")
@@ -98,8 +98,8 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
      * Callbacks to the host (i.e. activity) to handle things triggered from this view item
      */
     public interface Host {
+        void onToggleTaskStatus(Task task);
         void onEditTask(Task task);
-
         void onDeleteTask(Task task);
     }
 }

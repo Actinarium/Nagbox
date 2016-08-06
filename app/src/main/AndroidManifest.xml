@@ -33,9 +33,15 @@
             </intent-filter>
         </activity>
 
+        <service
+                android:name=".service.NagboxService"
+                android:enabled="true"
+                android:exported="false" />
+
         <provider
                 android:name=".database.NagboxContentProvider"
                 android:authorities="com.actinarium.nagbox.provider"
+                android:enabled="true"
                 android:exported="false" />
 
     </application>

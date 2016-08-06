@@ -16,6 +16,7 @@
 
 package com.actinarium.nagbox.database;
 
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -29,8 +30,6 @@ import com.actinarium.nagbox.model.Task;
  */
 public final class NagboxContract {
 
-    private NagboxContract() {}
-
     public static final String CONTENT_AUTHORITY = "com.actinarium.nagbox.provider";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
@@ -39,6 +38,7 @@ public final class NagboxContract {
     // Table mappings ------------------------------------
 
     public static class TasksTable implements BaseColumns {
+
         // Database stuff
         public static final String TABLE_NAME = "tasks";
 
@@ -50,10 +50,23 @@ public final class NagboxContract {
         // Content provider stuff
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TASKS).build();
         public static final String CONTENT_TYPE_DIR = "vnd.android.cursor.dir/" + CONTENT_AUTHORITY + '.' + PATH_TASKS;
+
+        public static Uri getUriForItem(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
     }
 
     // Building blocks -----------------------------------
-    // Selection and sorting expressions, join clauses etc belong here
+
+    /**
+     * An interface or a class (if methods are required) where various building blocks are grouped.
+     * Selection and sorting expressions, join clauses etc belong here.
+     */
+    public interface BuildingBlocks {
+
+        String SELECTION_ID = BaseColumns._ID + " = ?";
+
+    }
 
     // Projections ---------------------------------------
 

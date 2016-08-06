@@ -39,9 +39,10 @@ public class Task implements Parcelable {
     public static final int FLAG_NOT_DISMISSED = 2;
 
     public static final int DEFAULT_INTERVAL = 5;
+    public static final int NO_ID = -1;
 
 
-    public long id;
+    public long id = NO_ID;
     public String title;
     /**
      * Interval in minutes
@@ -80,6 +81,14 @@ public class Task implements Parcelable {
         return (flags & FLAG_ACTIVE) != 0;
     }
 
+    public void setIsActive(boolean isActive) {
+        if (isActive) {
+            flags |= FLAG_ACTIVE;
+        } else {
+            flags &= ~FLAG_ACTIVE;
+        }
+    }
+
     // Export into ContentValues for insert/update ops -------------------
 
     /**
@@ -87,6 +96,7 @@ public class Task implements Parcelable {
      *
      * @return <code>ContentValues</code> with title, interval, and flags
      * @see #toContentValuesOnStatusChange()
+     * @see #toContentValuesOnRestore()
      */
     public ContentValues toContentValues() {
         ContentValues values = new ContentValues(3);
@@ -103,6 +113,22 @@ public class Task implements Parcelable {
      */
     public ContentValues toContentValuesOnStatusChange() {
         ContentValues values = new ContentValues(2);
+        values.put(TasksTable.COL_FLAGS, flags);
+        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
+        return values;
+    }
+
+    /**
+     * Get {@link ContentValues} for this model to feed it to restore deleted task operation. Will contain all fields,
+     * including {@link #id}.
+     *
+     * @return <code>ContentValues</code> with all fields
+     */
+    public ContentValues toContentValuesOnRestore() {
+        ContentValues values = new ContentValues(5);
+        values.put(TasksTable._ID, id);
+        values.put(TasksTable.COL_TITLE, title);
+        values.put(TasksTable.COL_INTERVAL, interval);
         values.put(TasksTable.COL_FLAGS, flags);
         values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
         return values;
