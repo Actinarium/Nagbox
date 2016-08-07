@@ -89,6 +89,18 @@ public class Task implements Parcelable {
         }
     }
 
+    public boolean isNotDismissed() {
+        return (flags & FLAG_NOT_DISMISSED) != 0;
+    }
+
+    public void setIsNotDismissed(boolean isActive) {
+        if (isActive) {
+            flags |= FLAG_NOT_DISMISSED;
+        } else {
+            flags &= ~FLAG_NOT_DISMISSED;
+        }
+    }
+
     // Export into ContentValues for insert/update ops -------------------
 
     /**

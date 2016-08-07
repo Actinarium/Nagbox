@@ -16,6 +16,7 @@
 
 package com.actinarium.nagbox.database;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.actinarium.nagbox.database.NagboxContract.BuildingBlocks;
@@ -25,7 +26,7 @@ import com.actinarium.nagbox.model.Task;
 /**
  * Database operations facade with transaction builder. Here's the place to put all insert/update/delete logic, as well
  * as query logic that's only needed in the service but not in content provider.
- * <p/>
+ * <p>
  * In this particular project I made the class a static utility class. Feel free to make it non-static if you may need
  * to swap persistence implementations (e.g. SQLite and Firebase).
  *
@@ -44,6 +45,57 @@ public final class NagboxDbOps {
      */
     public static Transaction startTransaction(SQLiteDatabase writableDb) {
         return new Transaction(writableDb);
+    }
+
+    /**
+     * Query tasks table to determine the closest alarm to fire. Simply queries the minimum timestamp of active tasks
+     * &mdash; since the timestamp is updated whenever it fires and/or the task gets active, there won't be leftover
+     * timestamps in the past.
+     *
+     * @param db Readable database
+     * @return timestamp of the next alarm to schedule, or 0 if no alarms are scheduled
+     */
+    public static long getClosestNagTimestamp(SQLiteDatabase db) {
+        // Make an aggregated query for min(next_fire_at) where task is active
+        Cursor cursor = db.query(
+                TasksTable.TABLE_NAME,
+                new String[]{BuildingBlocks.AGGR_COL_MINIMUM_NEXT_FIRE_AT},
+                BuildingBlocks.SELECTION_TASK_ACTIVE,
+                null, null, null, null
+        );
+        cursor.moveToFirst();
+        final long result = cursor.isNull(0) ? 0 : cursor.getLong(0);
+        cursor.close();
+        return result;
+    }
+
+    /**
+     * Query all active tasks that need to be displayed in a notification: either due to fire, or already fired but not
+     * dismissed yet
+     *
+     * @param db        Readable database
+     * @param timestamp Current timestamp to only query tasks that have to fire (whose {@link Task#nextFireAt} <= this
+     *                  timestamp)
+     * @return array of tasks
+     */
+    public static Task[] getTasksToRemind(SQLiteDatabase db, long timestamp) {
+        Cursor cursor = db.query(
+                TasksTable.TABLE_NAME,
+                NagboxContract.TASK_PROJECTION.getProjection(),
+                BuildingBlocks.SELECTION_TASK_ACTIVE
+                        + " AND (" + BuildingBlocks.SELECTION_TASK_NOT_DISMISSED
+                        + " OR " + BuildingBlocks.SELECTION_TASK_FIRE_AT_ON_OR_BEFORE + ")",
+                new String[]{Long.toString(timestamp)},
+                null, null, null
+        );
+        final int count = cursor.getCount();
+        Task[] tasks = new Task[count];
+        for (int i = 0; i < count; i++) {
+            cursor.moveToPosition(i);
+            tasks[i] = NagboxContract.TASK_PROJECTION.mapCursorToModel(cursor, null);
+        }
+        cursor.close();
+        return tasks;
     }
 
 

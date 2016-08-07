@@ -26,6 +26,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
@@ -38,6 +39,8 @@ import com.actinarium.nagbox.service.NagboxService;
 
 public class MainActivity extends AppCompatActivity
         implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String TAG = "MainActivity";
 
     private static final int LOADER_TASKS = 1;
     private static final Projection<Task> PROJECTION = NagboxContract.TASK_PROJECTION;
@@ -131,7 +134,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-       mTasksAdapter.swapCursor(data);
+        Log.d(TAG, "Loader received new cursor");
+        mTasksAdapter.swapCursor(data);
     }
 
     @Override

@@ -16,15 +16,24 @@
 
 package com.actinarium.nagbox.service;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
+import android.support.v4.content.WakefulBroadcastReceiver;
+import android.text.format.DateUtils;
 import android.util.Log;
 import com.actinarium.nagbox.database.AppDbHelper;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.database.NagboxDbOps;
 import com.actinarium.nagbox.model.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An intent service that handles task operations and alarm management.
@@ -40,9 +49,14 @@ public class NagboxService extends IntentService {
     private static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
     private static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
     private static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
+    private static final String ACTION_ON_ALARM_FIRED = "com.actinarium.nagbox.intent.action.ON_ALARM_FIRED";
 
     private static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
     private static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
+
+    private static final int REQ_CODE_NAG_NOTIFICATION = 0;
+    private static final int NAG_NOTIFICATION_ID = 0;
+    private static final long ALARM_TOLERANCE = 10 * DateUtils.SECOND_IN_MILLIS;
 
     /**
      * Our writable database. Since we need it literally everywhere, it makes sense to pull it only once in onCreate().
@@ -118,6 +132,18 @@ public class NagboxService extends IntentService {
         context.startService(intent);
     }
 
+    /**
+     * React to the alarm event. This will usually result in displaying a notification.
+     *
+     * @param context context
+     */
+    public static void onAlarmFired(Context context) {
+        Intent intent = new Intent(context, NagboxService.class);
+        intent.setAction(ACTION_ON_ALARM_FIRED);
+        // Acquire a lock for this service so it completes before the device goes back to sleep
+        WakefulBroadcastReceiver.startWakefulService(context, intent);
+    }
+
 
     public NagboxService() {
         super(TAG);
@@ -141,6 +167,9 @@ public class NagboxService extends IntentService {
                 task = intent.getParcelableExtra(EXTRA_TASK);
                 handleUpdateTaskStatus(task);
                 break;
+            case ACTION_ON_ALARM_FIRED:
+                handleOnAlarmFired();
+                break;
             case ACTION_CREATE_TASK:
                 task = intent.getParcelableExtra(EXTRA_TASK);
                 handleCreateTask(task);
@@ -157,6 +186,9 @@ public class NagboxService extends IntentService {
                 handleRestoreTask(task);
                 break;
         }
+
+        // Release the wake lock, if there was any.
+        WakefulBroadcastReceiver.completeWakefulIntent(intent);
     }
 
 
@@ -246,7 +278,89 @@ public class NagboxService extends IntentService {
     }
 
     private void rescheduleAlarm() {
-        // todo: determine the closest nag timestamp and set up the alarm
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        // Prepare pending intent. Setting, updating, or cancelling the alarm - we need it in either case
+        Intent intent = new Intent(this, NagAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, REQ_CODE_NAG_NOTIFICATION, intent, PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        long nextTimestamp = NagboxDbOps.getClosestNagTimestamp(mDatabase);
+        if (nextTimestamp == 0) {
+            alarmManager.cancel(pendingIntent);
+        } else {
+            // todo: deal with exact/inexact reminders later
+            if (Build.VERSION.SDK_INT >= 23) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextTimestamp, pendingIntent);
+            } else if (Build.VERSION.SDK_INT >= 19) {
+                alarmManager.setWindow(AlarmManager.RTC_WAKEUP, nextTimestamp, ALARM_TOLERANCE, pendingIntent);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, nextTimestamp, pendingIntent);
+            }
+        }
+    }
+
+    private void handleOnAlarmFired() {
+        final long now = System.currentTimeMillis();
+
+        Task[] tasksToRemind = NagboxDbOps.getTasksToRemind(mDatabase, now);
+        if (tasksToRemind.length == 0) {
+            Log.w(TAG, "Alarm fired, but there was nothing to remind about");
+            return;
+        }
+
+        // todo: render a notification
+        Log.d(TAG, "Firing a notification for " + tasksToRemind.length + " tasks");
+
+        // Update the status and the time of the next fire where needed.
+        List<Task> tasksToUpdate = new ArrayList<>(tasksToRemind.length);
+        for (Task task : tasksToRemind) {
+            boolean isModified = false;
+            if (!task.isNotDismissed()) {
+                task.setIsNotDismissed(true);
+                isModified = true;
+            }
+
+            // Using the loop because the alarm might've fired long ago (e.g. before system reboot),
+            // so we need to make sure that nextFireAt is indeed in the future
+            while (task.nextFireAt <= now) {
+                task.nextFireAt += task.interval * DateUtils.MINUTE_IN_MILLIS;
+                isModified = true;
+            }
+
+            if (isModified) {
+                tasksToUpdate.add(task);
+            }
+        }
+
+        final int updateSize = tasksToUpdate.size();
+        if (updateSize == 0) {
+            Log.w(TAG, "Strangely enough, there was nothing to update when alarm fired");
+            rescheduleAlarm();
+            return;
+        }
+
+        // Otherwise update the tasks that need it
+        NagboxDbOps.Transaction transaction = NagboxDbOps.startTransaction(mDatabase);
+        for (int i = 0; i < updateSize; i++) {
+            final Task task = tasksToUpdate.get(i);
+            transaction.updateTaskStatus(task);
+        }
+        boolean isSuccess = transaction.commit();
+
+        if (!isSuccess) {
+            Log.e(TAG, "Couldn't update status of the tasks when alarm fired");
+        } else {
+            // Notify all affected task items
+            final ContentResolver contentResolver = getContentResolver();
+            for (int i = 0; i < updateSize; i++) {
+                contentResolver.notifyChange(TasksTable.getUriForItem(tasksToUpdate.get(i).id), null);
+            }
+        }
+
+        // Finally, schedule the alarm to fire the next time it's ought to fire
+        rescheduleAlarm();
     }
 
 }

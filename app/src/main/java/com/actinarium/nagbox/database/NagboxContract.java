@@ -65,6 +65,11 @@ public final class NagboxContract {
     public interface BuildingBlocks {
 
         String SELECTION_ID = BaseColumns._ID + " = ?";
+        String SELECTION_TASK_ACTIVE = TasksTable.COL_FLAGS + " & " + Task.FLAG_ACTIVE;
+        String SELECTION_TASK_NOT_DISMISSED = TasksTable.COL_FLAGS + " & " + Task.FLAG_NOT_DISMISSED;
+        String SELECTION_TASK_FIRE_AT_ON_OR_BEFORE = TasksTable.COL_NEXT_FIRE_AT + " <= ?";
+
+        String AGGR_COL_MINIMUM_NEXT_FIRE_AT = "MIN(" + TasksTable.COL_NEXT_FIRE_AT + ")";
 
     }
 
