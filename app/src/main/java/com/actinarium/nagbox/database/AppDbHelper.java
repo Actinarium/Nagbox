@@ -37,7 +37,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
 
     private static volatile AppDbHelper sInstance;
 
-    private Context mContext;
+    private final Context mContext;
 
     private AppDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

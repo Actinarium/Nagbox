@@ -31,7 +31,7 @@ import com.actinarium.nagbox.database.NagboxContract.TasksTable;
  */
 public class NagboxContentProvider extends ContentProvider {
 
-    private static UriMatcher sUriMatcher = buildUriMatcher();
+    private static final UriMatcher sUriMatcher = buildUriMatcher();
     private static final int ALL_TASKS = 0;
 
     private AppDbHelper mDbHelper;

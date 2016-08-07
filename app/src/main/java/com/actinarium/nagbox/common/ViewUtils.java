@@ -26,6 +26,7 @@ import android.support.annotation.DimenRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -79,8 +80,7 @@ public final class ViewUtils {
             return;
         }
 
-        //noinspection deprecation
-        int color = activity.getResources().getColor(colorRes);
+        int color = ContextCompat.getColor(activity, colorRes);
         Bitmap bm = BitmapFactory.decodeResource(activity.getResources(), icon);
         ActivityManager.TaskDescription td = new ActivityManager.TaskDescription(null, bm, color);
 

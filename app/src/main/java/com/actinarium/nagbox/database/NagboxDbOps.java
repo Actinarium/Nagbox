@@ -55,7 +55,7 @@ public final class NagboxDbOps {
      */
     public static class Transaction {
 
-        private SQLiteDatabase mDatabase;
+        private final SQLiteDatabase mDatabase;
         private boolean mIsSuccess;
 
         /**
