@@ -152,6 +152,19 @@ public class Task implements Parcelable {
         interval = value.isEmpty() ? 0 : Integer.parseInt(value);
     }
 
+    // Misc --------------------------------------------------------------
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", interval=" + interval +
+                ", flags=" + flags +
+                ", nextFireAt=" + nextFireAt +
+                '}';
+    }
+
     // Auto-generated Parcelable stuff -----------------------------------
 
     protected Task(Parcel in) {

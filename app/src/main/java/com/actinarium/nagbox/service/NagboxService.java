@@ -19,10 +19,11 @@ package com.actinarium.nagbox.service;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import com.actinarium.nagbox.database.AppDbHelper;
-import com.actinarium.nagbox.database.NagboxContract.BuildingBlocks;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
+import com.actinarium.nagbox.database.NagboxDbOps;
 import com.actinarium.nagbox.model.Task;
 
 /**
@@ -42,6 +43,11 @@ public class NagboxService extends IntentService {
 
     private static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
     private static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
+
+    /**
+     * Our writable database. Since we need it literally everywhere, it makes sense to pull it only once in onCreate().
+     */
+    private SQLiteDatabase mDatabase;
 
     /**
      * Create a new unstarted task. Doesn't trigger rescheduling alarms.
@@ -118,6 +124,12 @@ public class NagboxService extends IntentService {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        mDatabase = AppDbHelper.getInstance(this).getWritableDatabase();
+    }
+
+    @Override
     protected void onHandleIntent(Intent intent) {
         if (intent == null) {
             return;
@@ -127,7 +139,7 @@ public class NagboxService extends IntentService {
         switch (intent.getAction()) {
             case ACTION_UPDATE_TASK_STATUS:
                 task = intent.getParcelableExtra(EXTRA_TASK);
-                handleUpdateTaskFlags(task);
+                handleUpdateTaskStatus(task);
                 break;
             case ACTION_CREATE_TASK:
                 task = intent.getParcelableExtra(EXTRA_TASK);
@@ -147,16 +159,23 @@ public class NagboxService extends IntentService {
         }
     }
 
-    private void handleCreateTask(Task task) {
-        // todo: implement with dbops
-        long result = AppDbHelper.getInstance(this)
-                .getWritableDatabase()
-                .insert(TasksTable.TABLE_NAME, null, task.toContentValues());
 
-        if (result != -1) {
-            task.id = result;
-            // Need to notify the cursor and ultimately the loader that data needs to be reloaded
+    private void handleCreateTask(Task task) {
+        // Here goes extra logic if required (e.g. preparing related entities etc.)
+        // ...
+        // In our case it's not needed.
+
+        // In the end of the method we put everything into the DB using DbOps.Transaction
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .createTask(task)
+                .commit();
+
+        // Process transaction result.
+        // If successful, you still need to notify the cursor so that any loaders that listen to this data would reload
+        if (isSuccess) {
             getContentResolver().notifyChange(TasksTable.CONTENT_URI, null);
+        } else {
+            Log.e(TAG, "Couldn't create task " + task);
         }
     }
 
@@ -166,32 +185,32 @@ public class NagboxService extends IntentService {
             return;
         }
 
-        // todo: implement with dbops
-        int result = AppDbHelper.getInstance(this)
-                .getWritableDatabase()
-                .update(TasksTable.TABLE_NAME, task.toContentValues(), BuildingBlocks.SELECTION_ID, new String[]{Long.toString(task.id)});
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .updateTask(task)
+                .commit();
 
-        if (result == 1) {
-            // Need to notify the cursor and ultimately the loader that data needs to be reloaded
+        if (isSuccess) {
             getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
+        } else {
+            Log.e(TAG, "Couldn't update task " + task);
         }
     }
 
-    private void handleUpdateTaskFlags(Task task) {
+    private void handleUpdateTaskStatus(Task task) {
         if (task.id < 0) {
             Log.e(TAG, "Was trying to update flags of the task with invalid/unset ID=" + task.id);
             return;
         }
 
-        // todo: implement with dbops
-        int result = AppDbHelper.getInstance(this)
-                .getWritableDatabase()
-                .update(TasksTable.TABLE_NAME, task.toContentValuesOnStatusChange(), BuildingBlocks.SELECTION_ID, new String[]{Long.toString(task.id)});
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .updateTaskStatus(task)
+                .commit();
 
-        if (result == 1) {
-            // Need to notify the cursor and ultimately the loader that data needs to be reloaded
+        if (isSuccess) {
             getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
             rescheduleAlarm();
+        } else {
+            Log.e(TAG, "Couldn't update status of task " + task);
         }
     }
 
@@ -201,29 +220,28 @@ public class NagboxService extends IntentService {
             return;
         }
 
-        // todo: implement with dbops
-        int result = AppDbHelper.getInstance(this)
-                .getWritableDatabase()
-                .delete(TasksTable.TABLE_NAME, BuildingBlocks.SELECTION_ID, new String[]{Long.toString(taskId)});
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .deleteTask(taskId)
+                .commit();
 
-        if (result != 0) {
-            // Need to notify the cursor and ultimately the loader that data needs to be reloaded
+        if (isSuccess) {
             getContentResolver().notifyChange(TasksTable.getUriForItem(taskId), null);
             rescheduleAlarm();
+        } else {
+            Log.e(TAG, "Couldn't delete task with ID " + taskId);
         }
     }
 
     private void handleRestoreTask(Task task) {
-        // todo: implement with dbops
-        long result = AppDbHelper.getInstance(this)
-                .getWritableDatabase()
-                .insert(TasksTable.TABLE_NAME, null, task.toContentValuesOnRestore());
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .restoreTask(task)
+                .commit();
 
-        if (result != -1) {
-            task.id = result;
-            // Need to notify the cursor and ultimately the loader that data needs to be reloaded
-            getContentResolver().notifyChange(TasksTable.CONTENT_URI, null);
+        if (isSuccess) {
+            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
             rescheduleAlarm();
+        } else {
+            Log.e(TAG, "Couldn't restore task " + task);
         }
     }
 
