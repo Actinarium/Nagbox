@@ -17,10 +17,12 @@
 package com.actinarium.nagbox.service;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
@@ -189,4 +191,26 @@ public final class NotificationHelper {
                 .setDefaults(NotificationCompat.DEFAULT_ALL);
     }
 
+    /**
+     * Cancel the notification by provided ID. On Android N will also cancel the summary notification if it's the last
+     * child being removed.
+     *
+     * @param context        context
+     * @param notificationId ID of the notification to cancel
+     */
+    public static void cancelNotification(Context context, int notificationId) {
+        final NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
+        managerCompat.cancel(notificationId);
+
+        // Apparently N doesn't cancel summary notification when all individual ones are cancelled
+        // So we have to do it ourselves
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            final StatusBarNotification[] notifs = manager.getActiveNotifications();
+            if (notifs.length == 1 && notifs[0].getId() == NAG_NOTIFICATION_ID && notifs[0].isGroup()) {
+                // This must be the remaining summary. Clear it away
+                managerCompat.cancel(NAG_NOTIFICATION_ID);
+            }
+        }
+    }
 }

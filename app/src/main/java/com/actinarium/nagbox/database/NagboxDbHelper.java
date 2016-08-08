@@ -107,7 +107,7 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
         // Five starter tasks
         final int length = 5;
         final String[] starterTaskTitles = mContext.getResources().getStringArray(R.array.starter_tasks);
-        final int[] starterTaskIntervals = {3, 2, 5, 5, 5};
+        final int[] starterTaskIntervals = {2, 5, 5, 5, 3};
 
         NagboxDbOps.Transaction transaction = NagboxDbOps.startTransaction(db);
         Task reusableTask = new Task();

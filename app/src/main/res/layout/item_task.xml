@@ -23,7 +23,7 @@
     <data class="TaskItemBinding">
         <variable name="controller" type="com.actinarium.nagbox.ui.TaskItemHolder" />
         <variable name="task" type="com.actinarium.nagbox.model.Task" />
-        <import type="com.actinarium.aligned.R" />
+        <import type="com.actinarium.nagbox.common.DateUtils" />
     </data>
 
     <LinearLayout
@@ -62,8 +62,8 @@
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
                     app:lastLineDescent="4dp"
-                    android:text="@{task.isActive ? @string/status_running : @string/status_idle}"
-                    tools:text="Idle"/>
+                    android:text="@{task.isActive ? DateUtils.prettyPrintStartTime(task.lastStartedAt, context) : @string/status_idle}"
+                    tools:text="Started on 21 Jan, 2012 at 8:21 PM"/>
 
             <com.actinarium.aligned.TextView
                     android:layout_width="match_parent"

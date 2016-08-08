@@ -107,6 +107,7 @@ public class Task implements Parcelable {
     }
 
     // Export into ContentValues for insert/update ops -------------------
+    // On a side note, it may make sense to externalize this too
 
     /**
      * Get {@link ContentValues} for this model to feed it to create/update operations

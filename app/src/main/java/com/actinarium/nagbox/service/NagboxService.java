@@ -24,13 +24,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.format.DateUtils;
 import android.util.Log;
-import com.actinarium.nagbox.database.NagboxDbHelper;
 import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
+import com.actinarium.nagbox.database.NagboxDbHelper;
 import com.actinarium.nagbox.database.NagboxDbOps;
 import com.actinarium.nagbox.model.Task;
 
@@ -247,7 +246,7 @@ public class NagboxService extends IntentService {
 
     private void handleStopTaskById(long taskId, int notificationIdToCancel) {
         if (notificationIdToCancel != -1) {
-            NotificationManagerCompat.from(this).cancel(notificationIdToCancel);
+            NotificationHelper.cancelNotification(this, notificationIdToCancel);
         }
 
         // Request partial task model - only status columns (id, flags, next timestamp) are needed

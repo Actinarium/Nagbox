@@ -22,8 +22,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 /**
- * An interface for objects that handle {@link Cursor} -&gt; model object mapping. Such objects hold the "projection"
- * &mdash; a list of columns that should be queried, and must perform the mapping accordingly.
+ * An interface for objects that handle {@link Cursor} -&gt; model object mapping. One <code>Projection</code> object
+ * encapsulates the list of columns that should be queried, and the logic to properly map those columns to the model's
+ * fields.
  *
  * @author Paul Danyliuk
  */

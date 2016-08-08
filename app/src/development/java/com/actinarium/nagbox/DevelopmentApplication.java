@@ -29,6 +29,8 @@ public class DevelopmentApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Love Stetho. Learn more here: https://facebook.github.io/stetho/
         Stetho.initializeWithDefaults(this);
     }
 
