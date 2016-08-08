@@ -18,7 +18,8 @@
 <resources>
 
     <style name="ClickableView">
-        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:background">?android:windowBackground</item>
     </style>
 
 </resources>

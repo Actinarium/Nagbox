@@ -64,6 +64,15 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
         mBinding.icon.setImageResource(mTask.isActive() ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 
+    /**
+     * Get currently bound task (actually, a copy, since the task object is reusable)
+     *
+     * @return A copy of a bound task to use elsewhere
+     */
+    public Task getTask() {
+        return new Task(mTask);
+    }
+
     @SuppressWarnings("unused")
     public void onClick(View v) {
         // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm

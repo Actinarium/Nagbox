@@ -25,6 +25,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -37,8 +38,8 @@ import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
 import com.actinarium.nagbox.service.NagboxService;
 
-public class MainActivity extends AppCompatActivity
-        implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements TaskItemHolder.Host, TaskItemTouchCallback.Host,
+        EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "MainActivity";
 
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity
         mTasksAdapter.setTaskProjection(PROJECTION);
         mBinding.recycler.setAdapter(mTasksAdapter);
         mBinding.recycler.setHasFixedSize(true);
+        final ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TaskItemTouchCallback(this));
+        itemTouchHelper.attachToRecyclerView(mBinding.recycler);
 
         getSupportLoaderManager().initLoader(LOADER_TASKS, null, this);
 
