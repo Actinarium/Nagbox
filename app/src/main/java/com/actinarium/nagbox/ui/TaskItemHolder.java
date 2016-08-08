@@ -59,13 +59,18 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
     public void bind(Cursor cursor, Projection<Task> projection) {
         projection.mapCursorToModel(cursor, mTask);
         mBinding.setTask(mTask);
-
-        // Have to do this because data binding doesn't want to play nicely with vector drawable compat
-        mBinding.icon.setImageResource(mTask.isActive() ? R.drawable.ic_pause : R.drawable.ic_play);
+        // Don't wait till the next frame. Without this you'll see switch animation when the app is started.
+        mBinding.executePendingBindings();
     }
 
     @SuppressWarnings("unused")
     public void onClick(View v) {
+        // Clicking the tile will toggle the switch. Then the switch listener will request model update
+        mBinding.taskToggle.toggle();
+    }
+
+    @SuppressWarnings("unused")
+    public void onTaskStatusToggled() {
         // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm
         mHost.onToggleTaskStatus(new Task(mTask));
     }

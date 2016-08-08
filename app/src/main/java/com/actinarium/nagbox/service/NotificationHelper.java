@@ -58,7 +58,7 @@ public final class NotificationHelper {
         long currentTime = System.currentTimeMillis();
 
         // Create public notification
-        Notification publicNotification = makeCommonBuilder(context, currentTime)
+        Notification publicNotification = makeCommonBuilder(context, currentTime, task.id)
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentText(context.getResources().getQuantityString(R.plurals.notification_stacked_header, 1, 1))
                 .build();
@@ -66,7 +66,7 @@ public final class NotificationHelper {
         // Create private notification
         final String tempDescription = context.getResources()
                 .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
-        Notification privateNotification = makeCommonBuilder(context, currentTime)
+        Notification privateNotification = makeCommonBuilder(context, currentTime, task.id)
                 .setPublicVersion(publicNotification)
                 .setContentTitle(task.title)
                 .setContentText(tempDescription)
@@ -84,21 +84,11 @@ public final class NotificationHelper {
         // Create a group of stacked notifications
         for (Task task : tasks) {
 
-            // Override dismissing intent: dismissing individual notifications should remove a flag only from one task
-            Intent dismissAction = new Intent(context, NagboxService.class);
-            dismissAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_DISMISSED);
-            dismissAction.putExtra(NagboxService.EXTRA_TASK_ID, task.id);
-            PendingIntent dismissActionPI = PendingIntent.getService(
-                    context, NagboxService.REQ_CODE_DISMISS_NOTIFICATION, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT
-            );
-
             final String tempDescription = context.getResources()
                     .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
-
-            Notification stackedItem = makeCommonBuilder(context, currentTime)
+            Notification stackedItem = makeCommonBuilder(context, currentTime, task.id)
                     .setContentTitle(task.title)
                     .setContentText(tempDescription)
-                    .setDeleteIntent(dismissActionPI)
                     .setGroup(NAG_NOTIFICATION_GROUP)
                     .build();
 
@@ -113,7 +103,7 @@ public final class NotificationHelper {
         // Public summary notification
         // Since Android N already shows app name in the notification, display the summary in title
         boolean isApi24 = Build.VERSION.SDK_INT >= 24;
-        Notification publicNotification = makeCommonBuilder(context, currentTime)
+        Notification publicNotification = makeCommonBuilder(context, currentTime, Task.NO_ID)
                 .setContentTitle(isApi24 ? summary : context.getString(R.string.app_name))
                 .setContentText(isApi24 ? null : summary)
                 .setGroup(NAG_NOTIFICATION_GROUP)
@@ -136,7 +126,7 @@ public final class NotificationHelper {
         }
 
         // Create private summary notification
-        Notification privateNotification = makeCommonBuilder(context, currentTime)
+        Notification privateNotification = makeCommonBuilder(context, currentTime, Task.NO_ID)
                 .setPublicVersion(publicNotification)
                 .setContentTitle(isApi24 ? summary : context.getString(R.string.app_name))
                 .setContentText(isApi24 ? null : summary)
@@ -148,10 +138,17 @@ public final class NotificationHelper {
         notifManager.notify(NAG_NOTIFICATION_ID, privateNotification);
     }
 
-    private static NotificationCompat.Builder makeCommonBuilder(Context context, long currentTime) {
+    /**
+     * Make a new notification builder with common attributes already set.
+     *
+     * @param context         context
+     * @param currentTime     timestamp to display in the notification
+     * @param dismissedTaskId ID of the task to dismiss with this notification, or {@link Task#NO_ID} to dismiss all
+     * @return partially pre-configured notification builder
+     */
+    private static NotificationCompat.Builder makeCommonBuilder(Context context, long currentTime, long dismissedTaskId) {
         // When notification is clicked, simply go to the app
         Intent primaryAction = new Intent(context, MainActivity.class);
-        primaryAction.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent primaryActionPI = PendingIntent.getActivity(
                 context, 0, primaryAction, PendingIntent.FLAG_UPDATE_CURRENT
         );
@@ -159,6 +156,7 @@ public final class NotificationHelper {
         // When notification is dismissed, tell the service to handle it properly
         Intent dismissAction = new Intent(context, NagboxService.class);
         dismissAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_DISMISSED);
+        dismissAction.putExtra(NagboxService.EXTRA_TASK_ID, dismissedTaskId);
         PendingIntent dismissActionPI = PendingIntent.getService(
                 context, NagboxService.REQ_CODE_DISMISS_NOTIFICATION, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT
         );

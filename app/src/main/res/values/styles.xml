@@ -35,6 +35,10 @@
         <item name="colorAccent">@color/accentDarker</item>
     </style>
 
+    <style name="ThemeOverlay.Switch" parent="AppTheme">
+        <item name="colorAccent">@color/primary</item>
+    </style>
+
     <style name="ClickableView">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
     </style>

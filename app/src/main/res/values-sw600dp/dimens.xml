@@ -17,7 +17,8 @@
 
 <resources>
     <dimen name="edge_margin">24dp</dimen>
-    <dimen name="action_button_margin">8dp</dimen>
+    <dimen name="action_button_margin">16dp</dimen>
+    <dimen name="action_switch_margin">20dp</dimen>
     <dimen name="action_bar_extra">16dp</dimen>
     <dimen name="list_margin_bottom">80dp</dimen>
 

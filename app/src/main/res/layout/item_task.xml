@@ -32,20 +32,10 @@
             android:layout_height="wrap_content"
             android:minHeight="88dp"
             android:orientation="horizontal"
-            android:onClick="@{controller::onClick}">
-
-        <ImageView
-                android:id="@+id/icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginLeft="@dimen/edge_margin"
-                android:layout_marginStart="@dimen/edge_margin"
-                android:layout_marginRight="32dp"
-                android:layout_marginEnd="32dp"
-                android:contentDescription="@{task.isActive ? @string/a11y_stop_activity : @string/a11y_start_activity}"
-                tools:src="@drawable/ic_play"
-                tools:ignore="ContentDescription,RtlHardcoded"/>
+            android:onClick="@{controller::onClick}"
+            android:paddingLeft="@dimen/edge_margin"
+            android:paddingStart="@dimen/edge_margin"
+            tools:ignore="RtlHardcoded,RtlSymmetry">
 
         <LinearLayout
                 android:orientation="vertical"
@@ -82,24 +72,44 @@
                     android:textSize="14sp"
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
-                    app:lastLineDescent="4dp"
+                    app:lastLineDescent="8dp"
                     android:text="@{@plurals/nag_minutes(task.interval, task.interval)}"
                     tools:text="Nag each 5 minutes"/>
 
         </LinearLayout>
 
-        <ImageView
-                style="@style/ClickableView"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginRight="@dimen/action_button_margin"
-                android:layout_marginEnd="@dimen/action_button_margin"
-                app:srcCompat="@drawable/ic_more"
-                android:scaleType="center"
-                android:contentDescription="@string/a11y_actions_menu"
-                android:onClick="@{controller::onMenuClick}"
-                tools:ignore="RtlHardcoded"/>
+                android:orientation="vertical"
+                android:gravity="right|end">
+
+            <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/taskToggle"
+                    android:theme="@style/ThemeOverlay.Switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="@dimen/action_switch_margin"
+                    android:layout_marginEnd="@dimen/action_switch_margin"
+                    android:checked="@{task.isActive}"
+                    android:onCheckedChanged="@{(sw, isChecked) -> controller.onTaskStatusToggled()}"
+                    android:contentDescription="@string/a11y_toggle_task_status"
+                    tools:checked="true" />
+
+            <ImageView
+                    style="@style/ClickableView"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="@dimen/action_button_margin"
+                    android:layout_marginEnd="@dimen/action_button_margin"
+                    app:srcCompat="@drawable/ic_more"
+                    android:scaleType="center"
+                    android:contentDescription="@string/a11y_actions_menu"
+                    android:onClick="@{controller::onMenuClick}"
+                    tools:ignore="RtlHardcoded"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

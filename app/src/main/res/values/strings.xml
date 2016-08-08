@@ -17,8 +17,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Nagbox</string>
 
-    <string name="a11y_start_activity">Start activity</string>
-    <string name="a11y_stop_activity">Stop activity</string>
+    <string name="a11y_toggle_task_status">Toggle task status</string>
     <string name="a11y_actions_menu">Actions menu</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
