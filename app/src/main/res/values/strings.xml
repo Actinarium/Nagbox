@@ -52,4 +52,12 @@
     </plurals>
     <string name="notification_action_stop">Stop task</string>
 
+    <string-array name="starter_tasks">
+        <item>Wasting time</item>
+        <item>Browsing social media</item>
+        <item>Playing games</item>
+        <item>Watching videos</item>
+        <item>Not going to sleep</item>
+    </string-array>
+
 </resources>
