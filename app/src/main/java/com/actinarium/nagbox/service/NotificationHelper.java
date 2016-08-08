@@ -96,8 +96,10 @@ public final class NotificationHelper {
             Intent stopAction = new Intent(context, NagboxService.class);
             stopAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_ACTION_STOP_TASK);
             stopAction.putExtra(NagboxService.EXTRA_TASK_ID, task.id);
-            stopAction.putExtra(NagboxService.EXTRA_CANCEL_NOTIFICATION_ID, task.id);
-            PendingIntent stopActionPI = PendingIntent.getService(context, 0, stopAction, PendingIntent.FLAG_UPDATE_CURRENT);
+            stopAction.putExtra(NagboxService.EXTRA_CANCEL_NOTIFICATION_ID, (int) task.id);
+
+            // Since actions are "equal" (differ in extras only), need to use a unique "request code" (task.id will do)
+            PendingIntent stopActionPI = PendingIntent.getService(context, (int) task.id, stopAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
             final String tempDescription = context.getResources()
                     .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
