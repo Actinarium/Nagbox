@@ -173,7 +173,8 @@ public final class NotificationHelper {
         Intent dismissAction = new Intent(context, NagboxService.class);
         dismissAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_DISMISSED);
         dismissAction.putExtra(NagboxService.EXTRA_TASK_ID, dismissedTaskId);
-        PendingIntent dismissActionPI = PendingIntent.getService(context, 0, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT);
+        // Just as well, this pending intent needs a unique request code, otherwise it will be overwritten
+        PendingIntent dismissActionPI = PendingIntent.getService(context, (int) dismissedTaskId, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
         return new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_nag)
