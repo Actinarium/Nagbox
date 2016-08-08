@@ -87,10 +87,13 @@ public class AppDbHelper extends SQLiteOpenHelper {
      * @param db Database instance
      */
     private void importInitialData(SQLiteDatabase db) {
-        // todo: temporary. Read items from resources, insert using dbops
+        // todo: temporary. Read items from resources
         Task initialTask = new Task();
         initialTask.title = "Stop wasting time";
-        db.insert(NagboxContract.TasksTable.TABLE_NAME, null, initialTask.toContentValues());
+
+        NagboxDbOps.startTransaction(db)
+                .createTask(initialTask)
+                .commit();
     }
 
 }

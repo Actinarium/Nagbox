@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity
         mBinding.recycler.setHasFixedSize(true);
 
         getSupportLoaderManager().initLoader(LOADER_TASKS, null, this);
+
+        // todo: if the app was force closed and started again, make a check whether there are nags to deliver
     }
 
     @Override

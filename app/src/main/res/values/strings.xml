@@ -42,4 +42,14 @@
     <string name="dialog_empty_title">Nag text cannot be empty</string>
     <string name="dialog_invalid_interval">Interval cannot be zero</string>
 
+    <plurals name="notification_stacked_header">
+        <item quantity="one">Nagging you about <xliff:g id="count" example="1">%d</xliff:g> task</item>
+        <item quantity="other">Nagging you about <xliff:g id="count" example="5">%d</xliff:g> tasks</item>
+    </plurals>
+    <string name="notification_stack_overflow">+<xliff:g id="number_of_overflown_tasks" example="2">%d</xliff:g> more</string>
+    <plurals name="notification_nag_description">
+        <item quantity="one">Another minute passed</item>
+        <item quantity="other">Another <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes passed</item>
+    </plurals>
+
 </resources>

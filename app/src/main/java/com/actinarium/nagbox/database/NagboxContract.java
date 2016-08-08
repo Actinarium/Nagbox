@@ -71,6 +71,8 @@ public final class NagboxContract {
 
         String AGGR_COL_MINIMUM_NEXT_FIRE_AT = "MIN(" + TasksTable.COL_NEXT_FIRE_AT + ")";
 
+        String ORDER_BY_TASK_FIRE_AT_ASC = TasksTable.COL_NEXT_FIRE_AT + " ASC";
+
     }
 
     // Projections ---------------------------------------

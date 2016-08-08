@@ -44,19 +44,20 @@ public class NagboxService extends IntentService {
 
     private static final String TAG = "NagboxService";
 
-    private static final String ACTION_CREATE_TASK = "com.actinarium.nagbox.intent.action.CREATE_TASK";
-    private static final String ACTION_UPDATE_TASK = "com.actinarium.nagbox.intent.action.UPDATE_TASK";
-    private static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
-    private static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
-    private static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
-    private static final String ACTION_ON_ALARM_FIRED = "com.actinarium.nagbox.intent.action.ON_ALARM_FIRED";
+    static final String ACTION_CREATE_TASK = "com.actinarium.nagbox.intent.action.CREATE_TASK";
+    static final String ACTION_UPDATE_TASK = "com.actinarium.nagbox.intent.action.UPDATE_TASK";
+    static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
+    static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
+    static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
+    static final String ACTION_ON_ALARM_FIRED = "com.actinarium.nagbox.intent.action.ON_ALARM_FIRED";
+    static final String ACTION_ON_NOTIFICATION_DISMISSED = "com.actinarium.nagbox.intent.action.ON_NOTIFICATION_DISMISSED";
 
-    private static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
-    private static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
+    static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
+    static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
 
-    private static final int REQ_CODE_NAG_NOTIFICATION = 0;
-    private static final int NAG_NOTIFICATION_ID = 0;
-    private static final long ALARM_TOLERANCE = 10 * DateUtils.SECOND_IN_MILLIS;
+    static final int REQ_CODE_NAG_NOTIFICATION = 0;
+    static final int REQ_CODE_DISMISS_NOTIFICATION = 1;
+    static final long ALARM_TOLERANCE = 5 * DateUtils.SECOND_IN_MILLIS;
 
     /**
      * Our writable database. Since we need it literally everywhere, it makes sense to pull it only once in onCreate().
@@ -170,6 +171,10 @@ public class NagboxService extends IntentService {
             case ACTION_ON_ALARM_FIRED:
                 handleOnAlarmFired();
                 break;
+            case ACTION_ON_NOTIFICATION_DISMISSED:
+                long id = intent.getLongExtra(EXTRA_TASK_ID, Task.NO_ID);
+                handleOnNotificationDismissed(id);
+                break;
             case ACTION_CREATE_TASK:
                 task = intent.getParcelableExtra(EXTRA_TASK);
                 handleCreateTask(task);
@@ -222,6 +227,7 @@ public class NagboxService extends IntentService {
                 .commit();
 
         if (isSuccess) {
+            // Even though our content provider doesn't know about a single item URI yet, won't hurt to do it right
             getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
         } else {
             Log.e(TAG, "Couldn't update task " + task);
@@ -306,12 +312,11 @@ public class NagboxService extends IntentService {
 
         Task[] tasksToRemind = NagboxDbOps.getTasksToRemind(mDatabase, now);
         if (tasksToRemind.length == 0) {
-            Log.w(TAG, "Alarm fired, but there was nothing to remind about");
+            Log.i(TAG, "Alarm fired/check requested, but there was nothing to remind about");
             return;
         }
 
-        // todo: render a notification
-        Log.d(TAG, "Firing a notification for " + tasksToRemind.length + " tasks");
+        NotificationHelper.fireNotification(this, tasksToRemind);
 
         // Update the status and the time of the next fire where needed.
         List<Task> tasksToUpdate = new ArrayList<>(tasksToRemind.length);
@@ -361,6 +366,38 @@ public class NagboxService extends IntentService {
 
         // Finally, schedule the alarm to fire the next time it's ought to fire
         rescheduleAlarm();
+    }
+
+    /**
+     * Unset "not seen" flag from the task with provided ID or all unseen tasks (depending on whether a summary
+     * notification or an individual one from the stack was dismissed)
+     *
+     * @param id ID of the task that's "seen". Pass {@link Task#NO_ID} to "see" all tasks
+     */
+    private void handleOnNotificationDismissed(long id) {
+        Task[] tasksToDismiss = NagboxDbOps.getTasksToDismiss(mDatabase, id);
+
+        if (tasksToDismiss.length == 0) {
+            // Well, nothing to do. Maybe the user has deactivated the tasks before dismissing the notification
+            return;
+        }
+
+        NagboxDbOps.Transaction transaction = NagboxDbOps.startTransaction(mDatabase);
+        for (Task task : tasksToDismiss) {
+            task.setIsNotDismissed(false);
+            transaction.updateTaskStatus(task);
+        }
+        boolean isSuccess = transaction.commit();
+
+        if (!isSuccess) {
+            Log.e(TAG, "Couldn't unset the 'not dismissed' flag from tasks");
+        } else {
+            // Notify all affected task items
+            final ContentResolver contentResolver = getContentResolver();
+            for (Task task : tasksToDismiss) {
+                contentResolver.notifyChange(TasksTable.getUriForItem(task.id), null);
+            }
+        }
     }
 
 }

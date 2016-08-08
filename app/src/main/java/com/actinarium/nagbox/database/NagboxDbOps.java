@@ -86,8 +86,44 @@ public final class NagboxDbOps {
                         + " AND (" + BuildingBlocks.SELECTION_TASK_NOT_DISMISSED
                         + " OR " + BuildingBlocks.SELECTION_TASK_FIRE_AT_ON_OR_BEFORE + ")",
                 new String[]{Long.toString(timestamp)},
-                null, null, null
+                null, null,
+                BuildingBlocks.ORDER_BY_TASK_FIRE_AT_ASC
         );
+        final int count = cursor.getCount();
+        Task[] tasks = new Task[count];
+        for (int i = 0; i < count; i++) {
+            cursor.moveToPosition(i);
+            tasks[i] = NagboxContract.TASK_PROJECTION.mapCursorToModel(cursor, null);
+        }
+        cursor.close();
+        return tasks;
+    }
+
+    /**
+     * Query "not seen" tasks, either all or the one with specific ID
+     *
+     * @param db Readable database
+     * @param id ID of a specific task, or {@link Task#NO_ID} to request all unseen tasks
+     * @return array of tasks that are not seen
+     */
+    public static Task[] getTasksToDismiss(SQLiteDatabase db, long id) {
+        Cursor cursor;
+        if (id == Task.NO_ID) {
+            cursor = db.query(
+                    TasksTable.TABLE_NAME,
+                    NagboxContract.TASK_PROJECTION.getProjection(),
+                    BuildingBlocks.SELECTION_TASK_NOT_DISMISSED,
+                    null, null, null, null
+            );
+        } else {
+            cursor = db.query(
+                    TasksTable.TABLE_NAME,
+                    NagboxContract.TASK_PROJECTION.getProjection(),
+                    BuildingBlocks.SELECTION_ID + " AND " + BuildingBlocks.SELECTION_TASK_NOT_DISMISSED,
+                    new String[]{Long.toString(id)},
+                    null, null, null
+            );
+        }
         final int count = cursor.getCount();
         Task[] tasks = new Task[count];
         for (int i = 0; i < count; i++) {
@@ -274,7 +310,6 @@ public final class NagboxDbOps {
 
             return this;
         }
-
     }
 
 }
