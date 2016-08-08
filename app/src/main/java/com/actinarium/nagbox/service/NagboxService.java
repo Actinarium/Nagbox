@@ -28,7 +28,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.format.DateUtils;
 import android.util.Log;
-import com.actinarium.nagbox.database.AppDbHelper;
+import com.actinarium.nagbox.database.NagboxDbHelper;
 import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.database.NagboxDbOps;
@@ -145,7 +145,7 @@ public class NagboxService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        mDatabase = AppDbHelper.getInstance(this).getWritableDatabase();
+        mDatabase = NagboxDbHelper.getInstance(this).getWritableDatabase();
     }
 
     @Override
@@ -331,7 +331,7 @@ public class NagboxService extends IntentService {
         List<Task> tasksToUpdate = new ArrayList<>(tasksToRemind.length);
         for (Task task : tasksToRemind) {
             boolean isModified = false;
-            if (!task.isSeen()) {
+            if (task.isSeen()) {
                 task.setIsSeen(false);
                 isModified = true;
             }

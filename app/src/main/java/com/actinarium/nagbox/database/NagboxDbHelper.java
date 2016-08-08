@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.RawRes;
 import android.text.TextUtils;
+import android.util.Log;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ReaderUtils;
 import com.actinarium.nagbox.model.Task;
@@ -30,27 +31,29 @@ import com.actinarium.nagbox.model.Task;
  *
  * @author Paul Danyliuk
  */
-public class AppDbHelper extends SQLiteOpenHelper {
+public class NagboxDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "app.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final String TAG = "NagboxDbHelper";
 
-    private static volatile AppDbHelper sInstance;
+    private static final String DATABASE_NAME = "nagbox.db";
+    private static final int DATABASE_VERSION = 2;
+
+    private static volatile NagboxDbHelper sInstance;
 
     private final Context mContext;
 
-    private AppDbHelper(Context context) {
+    private NagboxDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mContext = context;
     }
 
-    public static AppDbHelper getInstance(Context context) {
-        AppDbHelper localInstance = sInstance;
+    public static NagboxDbHelper getInstance(Context context) {
+        NagboxDbHelper localInstance = sInstance;
         if (localInstance == null) {
-            synchronized (AppDbHelper.class) {
+            synchronized (NagboxDbHelper.class) {
                 localInstance = sInstance;
                 if (localInstance == null) {
-                    sInstance = localInstance = new AppDbHelper(context);
+                    sInstance = localInstance = new NagboxDbHelper(context);
                 }
             }
         }
@@ -60,12 +63,26 @@ public class AppDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         execFile(db, R.raw.schema_v1);
+        execFile(db, R.raw.migration_v1_v2);
+        // When there are too many migrations, just create a new base schema (e.g. schema_v4)
         importInitialData(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int from, int to) {
-        // no-op, nothing to upgrade at the moment
+        // You can use switch statement on 'from' without breaks for fall-through
+        switch (from) {
+            case 1:
+                Log.i(TAG, "Migrating DB: v1 -> v2");
+                execFile(db, R.raw.migration_v1_v2);
+//          case 2:
+//              Log.i(TAG, "Migrating DB: v2 -> v3");
+//              execFile(db, R.raw.migration_v2_v3);
+//          case 3:
+//              Log.i(TAG, "Migrating DB: v3 -> v4");
+//              execFile(db, R.raw.migration_v3_v4);
+//          ...etc
+        }
     }
 
     /**
@@ -75,7 +92,7 @@ public class AppDbHelper extends SQLiteOpenHelper {
      * @param sqlFileRes ID of the file with SQL queries placed in /res/raw
      */
     private void execFile(SQLiteDatabase db, @RawRes int sqlFileRes) {
-        final String[] queries = TextUtils.join("", ReaderUtils.readLines(mContext, sqlFileRes)).split(";");
+        final String[] queries = TextUtils.join(" ", ReaderUtils.readLines(mContext, sqlFileRes)).split(";");
         for (String query : queries) {
             db.execSQL(query);
         }
@@ -87,12 +104,16 @@ public class AppDbHelper extends SQLiteOpenHelper {
      * @param db Database instance
      */
     private void importInitialData(SQLiteDatabase db) {
-        String[] starterTaskTitles = mContext.getResources().getStringArray(R.array.starter_tasks);
+        // Five starter tasks
+        final int length = 5;
+        final String[] starterTaskTitles = mContext.getResources().getStringArray(R.array.starter_tasks);
+        final int[] starterTaskIntervals = {3, 2, 5, 5, 5};
 
         NagboxDbOps.Transaction transaction = NagboxDbOps.startTransaction(db);
         Task reusableTask = new Task();
-        for (String title : starterTaskTitles) {
-            reusableTask.title = title;
+        for (int i = 0; i < length; i++) {
+            reusableTask.title = starterTaskTitles[i];
+            reusableTask.interval = starterTaskIntervals[i];
             transaction.createTask(reusableTask);
         }
         transaction.commit();

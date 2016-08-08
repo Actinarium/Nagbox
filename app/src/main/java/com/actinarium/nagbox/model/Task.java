@@ -60,6 +60,10 @@ public class Task implements Parcelable {
      * <code>true</code>, otherwise it can be anything.
      */
     public long nextFireAt;
+    /**
+     * Timestamp (msec) when this task was last started. Can be undefined (usually 0) until started at least once.
+     */
+    public long lastStartedAt;
 
 
     public Task() {}
@@ -75,6 +79,7 @@ public class Task implements Parcelable {
         this.interval = source.interval;
         this.flags = source.flags;
         this.nextFireAt = source.nextFireAt;
+        this.lastStartedAt = source.lastStartedAt;
     }
 
     public boolean isActive() {
@@ -119,13 +124,15 @@ public class Task implements Parcelable {
     }
 
     /**
-     * Get {@link ContentValues} for this model when its status (flags, next fire time) needs to be updated
+     * Get {@link ContentValues} for this model when its status (flags, last started and next fire time) needs to be
+     * updated
      *
      * @return <code>ContentValues</code> with flags and nextFireAt
      */
     public ContentValues toContentValuesOnStatusChange() {
         ContentValues values = new ContentValues(2);
         values.put(TasksTable.COL_FLAGS, flags);
+        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
         values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
         return values;
     }
@@ -143,6 +150,7 @@ public class Task implements Parcelable {
         values.put(TasksTable.COL_INTERVAL, interval);
         values.put(TasksTable.COL_FLAGS, flags);
         values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
+        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
         return values;
     }
 
@@ -174,6 +182,7 @@ public class Task implements Parcelable {
                 ", interval=" + interval +
                 ", flags=" + flags +
                 ", nextFireAt=" + nextFireAt +
+                ", lastStartedAt=" + lastStartedAt +
                 '}';
     }
 
@@ -185,6 +194,7 @@ public class Task implements Parcelable {
         interval = in.readInt();
         flags = in.readInt();
         nextFireAt = in.readLong();
+        lastStartedAt = in.readLong();
     }
 
     public static final Creator<Task> CREATOR = new Creator<Task>() {
@@ -211,5 +221,6 @@ public class Task implements Parcelable {
         parcel.writeInt(interval);
         parcel.writeInt(flags);
         parcel.writeLong(nextFireAt);
+        parcel.writeLong(lastStartedAt);
     }
 }

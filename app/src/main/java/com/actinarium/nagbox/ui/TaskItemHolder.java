@@ -71,10 +71,8 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
 
     @SuppressWarnings("unused")
     public void onTaskStatusChanged(boolean isActive) {
-        if (mTask.isActive() != isActive) {
-            // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm
-            mHost.onToggleTaskStatus(new Task(mTask));
-        }
+        // Tell the controller to set task status (idle/running) and schedule it for alarm
+        mHost.onSetTaskStatus(new Task(mTask), isActive);
     }
 
     @SuppressWarnings("unused")
@@ -105,7 +103,7 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
      * Callbacks to the host (i.e. activity) to handle things triggered from this view item
      */
     public interface Host {
-        void onToggleTaskStatus(Task task);
+        void onSetTaskStatus(Task task, boolean isActive);
         void onEditTask(Task task);
         void onDeleteTask(Task task);
     }

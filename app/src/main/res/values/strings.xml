@@ -50,14 +50,14 @@
         <item quantity="one">Another minute passed</item>
         <item quantity="other">Another <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes passed</item>
     </plurals>
-    <string name="notification_action_stop">Stop task</string>
+    <string name="notification_action_stop">Stop nagging</string>
 
     <string-array name="starter_tasks">
         <item>Wasting time</item>
         <item>Browsing social media</item>
         <item>Playing games</item>
         <item>Watching videos</item>
-        <item>Not going to sleep</item>
+        <item>Staying up late</item>
     </string-array>
 
 </resources>

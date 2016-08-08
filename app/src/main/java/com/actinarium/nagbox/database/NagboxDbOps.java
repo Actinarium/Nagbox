@@ -92,7 +92,9 @@ public final class NagboxDbOps {
 
     /**
      * Query all active tasks that need to be displayed in a notification: either due to fire, or already fired but not
-     * "seen" yet (notification not dismissed)
+     * "seen" yet (notification not dismissed). The tasks are ordered by nextFireAt time as it appears before updating
+     * any of them (i.e. the first one would probably be the one that triggered this reminder, and the rest will be in
+     * the order of further appearance, always running in cycles.
      *
      * @param db        Readable database
      * @param timestamp Current timestamp to only query tasks that have to fire (whose {@link Task#nextFireAt} <= this

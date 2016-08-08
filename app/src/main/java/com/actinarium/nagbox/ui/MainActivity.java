@@ -67,12 +67,18 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onToggleTaskStatus(Task task) {
-        task.setIsActive(!task.isActive());
+    public void onSetTaskStatus(Task task, boolean isActive) {
+        if (task.isActive() == isActive) {
+            // Status already set; do nothing
+            return;
+        }
+
+        task.setIsActive(isActive);
         task.setIsSeen(true);
-        if (task.isActive()) {
+        if (isActive) {
             // Schedule next fire time
-            task.nextFireAt = System.currentTimeMillis() + task.interval * DateUtils.MINUTE_IN_MILLIS;
+            task.lastStartedAt = System.currentTimeMillis();
+            task.nextFireAt = task.lastStartedAt + task.interval * DateUtils.MINUTE_IN_MILLIS;
         }
         NagboxService.updateTaskStatus(this, task);
     }

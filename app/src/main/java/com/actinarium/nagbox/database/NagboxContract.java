@@ -46,6 +46,7 @@ public final class NagboxContract {
         public static final String COL_INTERVAL = "interval";
         public static final String COL_FLAGS = "flags";
         public static final String COL_NEXT_FIRE_AT = "next_fire_at";
+        public static final String COL_LAST_STARTED_AT = "last_started_at";
 
         // Content provider stuff
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TASKS).build();
@@ -90,7 +91,8 @@ public final class NagboxContract {
                 TasksTable.COL_TITLE,
                 TasksTable.COL_INTERVAL,
                 TasksTable.COL_FLAGS,
-                TasksTable.COL_NEXT_FIRE_AT
+                TasksTable.COL_NEXT_FIRE_AT,
+                TasksTable.COL_LAST_STARTED_AT
         };
 
         @Override
@@ -109,6 +111,7 @@ public final class NagboxContract {
             task.interval = cursor.getInt(2);
             task.flags = cursor.getInt(3);
             task.nextFireAt = cursor.getLong(4);
+            task.lastStartedAt = cursor.getLong(5);
 
             return task;
         }
@@ -127,7 +130,8 @@ public final class NagboxContract {
         private static final String[] COLUMNS = {
                 TasksTable._ID,
                 TasksTable.COL_FLAGS,
-                TasksTable.COL_NEXT_FIRE_AT
+                TasksTable.COL_NEXT_FIRE_AT,
+                TasksTable.COL_LAST_STARTED_AT
         };
 
         @Override
@@ -144,6 +148,7 @@ public final class NagboxContract {
             task.id = cursor.getLong(0);
             task.flags = cursor.getInt(1);
             task.nextFireAt = cursor.getLong(2);
+            task.lastStartedAt = cursor.getLong(3);
 
             return task;
         }

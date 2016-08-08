@@ -34,11 +34,11 @@ public class NagboxContentProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private static final int ALL_TASKS = 0;
 
-    private AppDbHelper mDbHelper;
+    private NagboxDbHelper mDbHelper;
 
     @Override
     public boolean onCreate() {
-        mDbHelper = AppDbHelper.getInstance(getContext());
+        mDbHelper = NagboxDbHelper.getInstance(getContext());
         return true;
     }
 
