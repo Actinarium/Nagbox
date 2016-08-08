@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
 
     private static final int LOADER_TASKS = 1;
-    private static final Projection<Task> PROJECTION = NagboxContract.TASK_PROJECTION;
+    private static final Projection<Task> PROJECTION = NagboxContract.TASK_FULL_PROJECTION;
 
     private MainActivityBinding mBinding;
     private TasksRVAdapter mTasksAdapter;
@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onToggleTaskStatus(Task task) {
         task.setIsActive(!task.isActive());
+        task.setIsSeen(true);
         if (task.isActive()) {
             // Schedule next fire time
             task.nextFireAt = System.currentTimeMillis() + task.interval * DateUtils.MINUTE_IN_MILLIS;
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity
         return new CursorLoader(
                 this,
                 TasksTable.CONTENT_URI,
-                PROJECTION.getProjection(),
+                PROJECTION.getColumns(),
                 null, null, null
         );
     }

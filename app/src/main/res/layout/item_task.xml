@@ -93,7 +93,7 @@
                     android:layout_marginRight="@dimen/action_switch_margin"
                     android:layout_marginEnd="@dimen/action_switch_margin"
                     android:checked="@{task.isActive}"
-                    android:onCheckedChanged="@{(sw, isChecked) -> controller.onTaskStatusToggled()}"
+                    android:onCheckedChanged="@{(sw, isChecked) -> controller.onTaskStatusChanged(isChecked)}"
                     android:contentDescription="@string/a11y_toggle_task_status"
                     tools:checked="true" />
 

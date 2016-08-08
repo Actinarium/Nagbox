@@ -25,7 +25,10 @@ public class NagAlarmReceiver extends WakefulBroadcastReceiver {
     public NagAlarmReceiver() {}
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        NagboxService.onAlarmFired(context);
+    public void onReceive(Context context, Intent receivedIntent) {
+        Intent delegateIntent = new Intent(context, NagboxService.class);
+        delegateIntent.setAction(NagboxService.ACTION_ON_ALARM_FIRED);
+        // Acquire a lock for this service so it completes before the device goes back to sleep
+        WakefulBroadcastReceiver.startWakefulService(context, delegateIntent);
     }
 }

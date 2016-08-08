@@ -66,7 +66,7 @@ public final class NagboxContract {
 
         String SELECTION_ID = BaseColumns._ID + " = ?";
         String SELECTION_TASK_ACTIVE = TasksTable.COL_FLAGS + " & " + Task.FLAG_ACTIVE;
-        String SELECTION_TASK_NOT_DISMISSED = TasksTable.COL_FLAGS + " & " + Task.FLAG_NOT_DISMISSED;
+        String SELECTION_TASK_NOT_SEEN = TasksTable.COL_FLAGS + " & " + Task.FLAG_NOT_SEEN;
         String SELECTION_TASK_FIRE_AT_ON_OR_BEFORE = TasksTable.COL_NEXT_FIRE_AT + " <= ?";
 
         String AGGR_COL_MINIMUM_NEXT_FIRE_AT = "MIN(" + TasksTable.COL_NEXT_FIRE_AT + ")";
@@ -77,12 +77,13 @@ public final class NagboxContract {
 
     // Projections ---------------------------------------
 
-    public static final TaskProjection TASK_PROJECTION = new TaskProjection();
+    public static final TaskFullProjection TASK_FULL_PROJECTION = new TaskFullProjection();
+    public static final TaskStatusProjection TASK_STATUS_PROJECTION = new TaskStatusProjection();
 
     /**
      * A projection to get all Task fields.
      */
-    public static final class TaskProjection implements Projection<Task> {
+    public static final class TaskFullProjection implements Projection<Task> {
 
         private static final String[] COLUMNS = {
                 TasksTable._ID,
@@ -93,7 +94,7 @@ public final class NagboxContract {
         };
 
         @Override
-        public String[] getProjection() {
+        public String[] getColumns() {
             return COLUMNS;
         }
 
@@ -108,6 +109,41 @@ public final class NagboxContract {
             task.interval = cursor.getInt(2);
             task.flags = cursor.getInt(3);
             task.nextFireAt = cursor.getLong(4);
+
+            return task;
+        }
+
+        @Override
+        public long getId(Cursor cursor) {
+            return cursor.getLong(0);
+        }
+    }
+
+    /**
+     * A projection to get only task status fields.
+     */
+    public static final class TaskStatusProjection implements Projection<Task> {
+
+        private static final String[] COLUMNS = {
+                TasksTable._ID,
+                TasksTable.COL_FLAGS,
+                TasksTable.COL_NEXT_FIRE_AT
+        };
+
+        @Override
+        public String[] getColumns() {
+            return COLUMNS;
+        }
+
+        @Override
+        public Task mapCursorToModel(Cursor cursor, @Nullable Task task) {
+            if (task == null) {
+                task = new Task();
+            }
+
+            task.id = cursor.getLong(0);
+            task.flags = cursor.getInt(1);
+            task.nextFireAt = cursor.getLong(2);
 
             return task;
         }

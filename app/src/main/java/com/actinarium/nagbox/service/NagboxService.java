@@ -24,10 +24,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.format.DateUtils;
 import android.util.Log;
 import com.actinarium.nagbox.database.AppDbHelper;
+import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.database.NagboxDbOps;
 import com.actinarium.nagbox.model.Task;
@@ -44,20 +46,22 @@ public class NagboxService extends IntentService {
 
     private static final String TAG = "NagboxService";
 
-    static final String ACTION_CREATE_TASK = "com.actinarium.nagbox.intent.action.CREATE_TASK";
-    static final String ACTION_UPDATE_TASK = "com.actinarium.nagbox.intent.action.UPDATE_TASK";
-    static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
-    static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
-    static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
+    public static final String ACTION_CREATE_TASK = "com.actinarium.nagbox.intent.action.CREATE_TASK";
+    public static final String ACTION_UPDATE_TASK = "com.actinarium.nagbox.intent.action.UPDATE_TASK";
+    public static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
+    public static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
+    public static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
+
+    // These can only be triggered within the system (have no corresponding public ways to call them)
     static final String ACTION_ON_ALARM_FIRED = "com.actinarium.nagbox.intent.action.ON_ALARM_FIRED";
     static final String ACTION_ON_NOTIFICATION_DISMISSED = "com.actinarium.nagbox.intent.action.ON_NOTIFICATION_DISMISSED";
+    static final String ACTION_ON_NOTIFICATION_ACTION_STOP_TASK = "com.actinarium.nagbox.intent.action.ON_NOTIFICATION_ACTION_STOP_TASK";
 
     static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
     static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
+    static final String EXTRA_CANCEL_NOTIFICATION_ID = "com.actinarium.nagbox.intent.extra.EXTRA_CANCEL_NOTIFICATION_ID";
 
-    static final int REQ_CODE_NAG_NOTIFICATION = 0;
-    static final int REQ_CODE_DISMISS_NOTIFICATION = 1;
-    static final long ALARM_TOLERANCE = 5 * DateUtils.SECOND_IN_MILLIS;
+    private static final long ALARM_TOLERANCE = 5 * DateUtils.SECOND_IN_MILLIS;
 
     /**
      * Our writable database. Since we need it literally everywhere, it makes sense to pull it only once in onCreate().
@@ -133,18 +137,6 @@ public class NagboxService extends IntentService {
         context.startService(intent);
     }
 
-    /**
-     * React to the alarm event. This will usually result in displaying a notification.
-     *
-     * @param context context
-     */
-    public static void onAlarmFired(Context context) {
-        Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_ON_ALARM_FIRED);
-        // Acquire a lock for this service so it completes before the device goes back to sleep
-        WakefulBroadcastReceiver.startWakefulService(context, intent);
-    }
-
 
     public NagboxService() {
         super(TAG);
@@ -162,32 +154,33 @@ public class NagboxService extends IntentService {
             return;
         }
 
-        Task task;
+        // I know that only either of those is needed, but for the sake of nice code I'm pulling these here
+        final Task task = intent.getParcelableExtra(EXTRA_TASK);
+        final long id = intent.getLongExtra(EXTRA_TASK_ID, Task.NO_ID);
         switch (intent.getAction()) {
             case ACTION_UPDATE_TASK_STATUS:
-                task = intent.getParcelableExtra(EXTRA_TASK);
                 handleUpdateTaskStatus(task);
                 break;
             case ACTION_ON_ALARM_FIRED:
                 handleOnAlarmFired();
                 break;
             case ACTION_ON_NOTIFICATION_DISMISSED:
-                long id = intent.getLongExtra(EXTRA_TASK_ID, Task.NO_ID);
                 handleOnNotificationDismissed(id);
                 break;
+            case ACTION_ON_NOTIFICATION_ACTION_STOP_TASK:
+                int notificationIdToCancel = intent.getIntExtra(EXTRA_CANCEL_NOTIFICATION_ID, -1);
+                handleStopTaskById(id, notificationIdToCancel);
+                break;
             case ACTION_CREATE_TASK:
-                task = intent.getParcelableExtra(EXTRA_TASK);
                 handleCreateTask(task);
                 break;
             case ACTION_UPDATE_TASK:
-                task = intent.getParcelableExtra(EXTRA_TASK);
                 handleUpdateTask(task);
                 break;
             case ACTION_DELETE_TASK:
-                handleDeleteTask(intent.getLongExtra(EXTRA_TASK_ID, Task.NO_ID));
+                handleDeleteTask(id);
                 break;
             case ACTION_RESTORE_TASK:
-                task = intent.getParcelableExtra(EXTRA_TASK);
                 handleRestoreTask(task);
                 break;
         }
@@ -252,6 +245,24 @@ public class NagboxService extends IntentService {
         }
     }
 
+    private void handleStopTaskById(long taskId, int notificationIdToCancel) {
+        if (notificationIdToCancel != -1) {
+            NotificationManagerCompat.from(this).cancel(notificationIdToCancel);
+        }
+
+        // Request partial task model - only status columns (id, flags, next timestamp) are needed
+        Task task = NagboxDbOps.getTaskStatusById(mDatabase, taskId, NagboxContract.TASK_STATUS_PROJECTION);
+
+        if (task == null || !task.isActive()) {
+            // Nothing to update
+            return;
+        }
+
+        task.setIsActive(false);
+        task.setIsSeen(true);
+        handleUpdateTaskStatus(task);
+    }
+
     private void handleDeleteTask(long taskId) {
         if (taskId < 0) {
             Log.e(TAG, "Was trying to delete task with invalid ID=" + taskId);
@@ -288,9 +299,7 @@ public class NagboxService extends IntentService {
 
         // Prepare pending intent. Setting, updating, or cancelling the alarm - we need it in either case
         Intent intent = new Intent(this, NagAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this, REQ_CODE_NAG_NOTIFICATION, intent, PendingIntent.FLAG_UPDATE_CURRENT
-        );
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         long nextTimestamp = NagboxDbOps.getClosestNagTimestamp(mDatabase);
         if (nextTimestamp == 0) {
@@ -322,8 +331,8 @@ public class NagboxService extends IntentService {
         List<Task> tasksToUpdate = new ArrayList<>(tasksToRemind.length);
         for (Task task : tasksToRemind) {
             boolean isModified = false;
-            if (!task.isNotDismissed()) {
-                task.setIsNotDismissed(true);
+            if (!task.isSeen()) {
+                task.setIsSeen(false);
                 isModified = true;
             }
 
@@ -384,13 +393,13 @@ public class NagboxService extends IntentService {
 
         NagboxDbOps.Transaction transaction = NagboxDbOps.startTransaction(mDatabase);
         for (Task task : tasksToDismiss) {
-            task.setIsNotDismissed(false);
+            task.setIsSeen(true);
             transaction.updateTaskStatus(task);
         }
         boolean isSuccess = transaction.commit();
 
         if (!isSuccess) {
-            Log.e(TAG, "Couldn't unset the 'not dismissed' flag from tasks");
+            Log.e(TAG, "Couldn't unset the 'not seen' flag from tasks");
         } else {
             // Notify all affected task items
             final ContentResolver contentResolver = getContentResolver();

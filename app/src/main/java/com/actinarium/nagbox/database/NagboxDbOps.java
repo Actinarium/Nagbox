@@ -26,7 +26,7 @@ import com.actinarium.nagbox.model.Task;
 /**
  * Database operations facade with transaction builder. Here's the place to put all insert/update/delete logic, as well
  * as query logic that's only needed in the service but not in content provider.
- * <p>
+ * <p/>
  * In this particular project I made the class a static utility class. Feel free to make it non-static if you may need
  * to swap persistence implementations (e.g. SQLite and Firebase).
  *
@@ -45,6 +45,27 @@ public final class NagboxDbOps {
      */
     public static Transaction startTransaction(SQLiteDatabase writableDb) {
         return new Transaction(writableDb);
+    }
+
+    /**
+     * Get task by ID with given projection.
+     *
+     * @param db         Readable database
+     * @param taskId     Task row ID
+     * @param projection Projection to request this task with. Use this to limit only to the fields you need.
+     * @return A new {@link Task} instance filled with data according to provided projection
+     */
+    public static Task getTaskStatusById(SQLiteDatabase db, long taskId, Projection<Task> projection) {
+        Cursor cursor = db.query(
+                TasksTable.TABLE_NAME,
+                projection.getColumns(),
+                BuildingBlocks.SELECTION_ID,
+                new String[]{Long.toString(taskId)},
+                null, null, null, "1"
+        );
+        Task task = cursor.moveToFirst() ? projection.mapCursorToModel(cursor, null) : null;
+        cursor.close();
+        return task;
     }
 
     /**
@@ -71,7 +92,7 @@ public final class NagboxDbOps {
 
     /**
      * Query all active tasks that need to be displayed in a notification: either due to fire, or already fired but not
-     * dismissed yet
+     * "seen" yet (notification not dismissed)
      *
      * @param db        Readable database
      * @param timestamp Current timestamp to only query tasks that have to fire (whose {@link Task#nextFireAt} <= this
@@ -81,9 +102,9 @@ public final class NagboxDbOps {
     public static Task[] getTasksToRemind(SQLiteDatabase db, long timestamp) {
         Cursor cursor = db.query(
                 TasksTable.TABLE_NAME,
-                NagboxContract.TASK_PROJECTION.getProjection(),
+                NagboxContract.TASK_FULL_PROJECTION.getColumns(),
                 BuildingBlocks.SELECTION_TASK_ACTIVE
-                        + " AND (" + BuildingBlocks.SELECTION_TASK_NOT_DISMISSED
+                        + " AND (" + BuildingBlocks.SELECTION_TASK_NOT_SEEN
                         + " OR " + BuildingBlocks.SELECTION_TASK_FIRE_AT_ON_OR_BEFORE + ")",
                 new String[]{Long.toString(timestamp)},
                 null, null,
@@ -93,7 +114,7 @@ public final class NagboxDbOps {
         Task[] tasks = new Task[count];
         for (int i = 0; i < count; i++) {
             cursor.moveToPosition(i);
-            tasks[i] = NagboxContract.TASK_PROJECTION.mapCursorToModel(cursor, null);
+            tasks[i] = NagboxContract.TASK_FULL_PROJECTION.mapCursorToModel(cursor, null);
         }
         cursor.close();
         return tasks;
@@ -111,15 +132,15 @@ public final class NagboxDbOps {
         if (id == Task.NO_ID) {
             cursor = db.query(
                     TasksTable.TABLE_NAME,
-                    NagboxContract.TASK_PROJECTION.getProjection(),
-                    BuildingBlocks.SELECTION_TASK_NOT_DISMISSED,
+                    NagboxContract.TASK_FULL_PROJECTION.getColumns(),
+                    BuildingBlocks.SELECTION_TASK_NOT_SEEN,
                     null, null, null, null
             );
         } else {
             cursor = db.query(
                     TasksTable.TABLE_NAME,
-                    NagboxContract.TASK_PROJECTION.getProjection(),
-                    BuildingBlocks.SELECTION_ID + " AND " + BuildingBlocks.SELECTION_TASK_NOT_DISMISSED,
+                    NagboxContract.TASK_FULL_PROJECTION.getColumns(),
+                    BuildingBlocks.SELECTION_ID + " AND " + BuildingBlocks.SELECTION_TASK_NOT_SEEN,
                     new String[]{Long.toString(id)},
                     null, null, null
             );
@@ -128,7 +149,7 @@ public final class NagboxDbOps {
         Task[] tasks = new Task[count];
         for (int i = 0; i < count; i++) {
             cursor.moveToPosition(i);
-            tasks[i] = NagboxContract.TASK_PROJECTION.mapCursorToModel(cursor, null);
+            tasks[i] = NagboxContract.TASK_FULL_PROJECTION.mapCursorToModel(cursor, null);
         }
         cursor.close();
         return tasks;

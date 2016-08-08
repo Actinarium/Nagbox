@@ -70,9 +70,11 @@ public class TaskItemHolder extends RecyclerView.ViewHolder implements PopupMenu
     }
 
     @SuppressWarnings("unused")
-    public void onTaskStatusToggled() {
-        // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm
-        mHost.onToggleTaskStatus(new Task(mTask));
+    public void onTaskStatusChanged(boolean isActive) {
+        if (mTask.isActive() != isActive) {
+            // Tell the controller to toggle task status (idle <-> running) and schedule it for alarm
+            mHost.onToggleTaskStatus(new Task(mTask));
+        }
     }
 
     @SuppressWarnings("unused")

@@ -36,7 +36,7 @@ public class Task implements Parcelable {
      * Indicates that this task already fired and was rescheduled, but the user haven't dismissed the notification yet,
      * so it should be included upon the next alarm.
      */
-    public static final int FLAG_NOT_DISMISSED = 2;
+    public static final int FLAG_NOT_SEEN = 2;
 
     public static final int DEFAULT_INTERVAL = 5;
     public static final int NO_ID = -1;
@@ -52,7 +52,7 @@ public class Task implements Parcelable {
      * Holds status flags for this task
      *
      * @see #FLAG_ACTIVE
-     * @see #FLAG_NOT_DISMISSED
+     * @see #FLAG_NOT_SEEN
      */
     public int flags;
     /**
@@ -89,15 +89,15 @@ public class Task implements Parcelable {
         }
     }
 
-    public boolean isNotDismissed() {
-        return (flags & FLAG_NOT_DISMISSED) != 0;
+    public boolean isSeen() {
+        return (flags & FLAG_NOT_SEEN) == 0;
     }
 
-    public void setIsNotDismissed(boolean isActive) {
-        if (isActive) {
-            flags |= FLAG_NOT_DISMISSED;
+    public void setIsSeen(boolean isSeen) {
+        if (isSeen) {
+            flags &= ~FLAG_NOT_SEEN;
         } else {
-            flags &= ~FLAG_NOT_DISMISSED;
+            flags |= FLAG_NOT_SEEN;
         }
     }
 

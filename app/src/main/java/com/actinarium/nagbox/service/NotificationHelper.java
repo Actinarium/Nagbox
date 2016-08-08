@@ -57,6 +57,13 @@ public final class NotificationHelper {
     private static void fireForSingleTask(Context context, Task task) {
         long currentTime = System.currentTimeMillis();
 
+        // Notification action to stop the task
+        Intent stopAction = new Intent(context, NagboxService.class);
+        stopAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_ACTION_STOP_TASK);
+        stopAction.putExtra(NagboxService.EXTRA_TASK_ID, task.id);
+        stopAction.putExtra(NagboxService.EXTRA_CANCEL_NOTIFICATION_ID, NAG_NOTIFICATION_ID);
+        PendingIntent stopActionPI = PendingIntent.getService(context, 0, stopAction, PendingIntent.FLAG_UPDATE_CURRENT);
+
         // Create public notification
         Notification publicNotification = makeCommonBuilder(context, currentTime, task.id)
                 .setContentTitle(context.getString(R.string.app_name))
@@ -70,6 +77,7 @@ public final class NotificationHelper {
                 .setPublicVersion(publicNotification)
                 .setContentTitle(task.title)
                 .setContentText(tempDescription)
+                .addAction(R.drawable.ic_cancel, context.getString(R.string.notification_action_stop), stopActionPI)
                 .build();
 
         // Fire!
@@ -84,12 +92,20 @@ public final class NotificationHelper {
         // Create a group of stacked notifications
         for (Task task : tasks) {
 
+            // Notification action to stop the task
+            Intent stopAction = new Intent(context, NagboxService.class);
+            stopAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_ACTION_STOP_TASK);
+            stopAction.putExtra(NagboxService.EXTRA_TASK_ID, task.id);
+            stopAction.putExtra(NagboxService.EXTRA_CANCEL_NOTIFICATION_ID, task.id);
+            PendingIntent stopActionPI = PendingIntent.getService(context, 0, stopAction, PendingIntent.FLAG_UPDATE_CURRENT);
+
             final String tempDescription = context.getResources()
                     .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
             Notification stackedItem = makeCommonBuilder(context, currentTime, task.id)
                     .setContentTitle(task.title)
                     .setContentText(tempDescription)
                     .setGroup(NAG_NOTIFICATION_GROUP)
+                    .addAction(R.drawable.ic_cancel, context.getString(R.string.notification_action_stop), stopActionPI)
                     .build();
 
             // Well, let's use task IDs for their individual notifications then
@@ -149,17 +165,13 @@ public final class NotificationHelper {
     private static NotificationCompat.Builder makeCommonBuilder(Context context, long currentTime, long dismissedTaskId) {
         // When notification is clicked, simply go to the app
         Intent primaryAction = new Intent(context, MainActivity.class);
-        PendingIntent primaryActionPI = PendingIntent.getActivity(
-                context, 0, primaryAction, PendingIntent.FLAG_UPDATE_CURRENT
-        );
+        PendingIntent primaryActionPI = PendingIntent.getActivity(context, 0, primaryAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // When notification is dismissed, tell the service to handle it properly
         Intent dismissAction = new Intent(context, NagboxService.class);
         dismissAction.setAction(NagboxService.ACTION_ON_NOTIFICATION_DISMISSED);
         dismissAction.putExtra(NagboxService.EXTRA_TASK_ID, dismissedTaskId);
-        PendingIntent dismissActionPI = PendingIntent.getService(
-                context, NagboxService.REQ_CODE_DISMISS_NOTIFICATION, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT
-        );
+        PendingIntent dismissActionPI = PendingIntent.getService(context, 0, dismissAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
         return new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_nag)

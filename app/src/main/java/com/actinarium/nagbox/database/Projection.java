@@ -36,7 +36,7 @@ public interface Projection<T> {
      * <code>SELECT</code> statement (or, actually, {@link SQLiteDatabase#query(String, String[], String, String[],
      * String, String, String)}).
      */
-    String[] getProjection();
+    String[] getColumns();
 
     /**
      * Convert current cursor row, queried with this projection, into a model object. This method should fill in

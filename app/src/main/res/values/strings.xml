@@ -50,5 +50,6 @@
         <item quantity="one">Another minute passed</item>
         <item quantity="other">Another <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes passed</item>
     </plurals>
+    <string name="notification_action_stop">Stop task</string>
 
 </resources>

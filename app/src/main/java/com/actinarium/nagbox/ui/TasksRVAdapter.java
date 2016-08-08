@@ -26,7 +26,7 @@ import com.actinarium.nagbox.databinding.TaskItemBinding;
 import com.actinarium.nagbox.model.Task;
 
 /**
- * A recycler view for a list of tasks
+ * A recycler view adapter for a list of tasks
  *
  * @author Paul Danyliuk
  */
@@ -70,7 +70,7 @@ public class TasksRVAdapter extends RecyclerView.Adapter<TaskItemHolder> {
     /**
      * Swap in a new cursor, returning the old cursor. The returned old cursor is <b>not closed.</b>
      *
-     * @param newCursor  The new cursor to be used.
+     * @param newCursor The new cursor to be used.
      * @return Returns the previously set cursor, or null if there wasn't one. If the given new cursor is the same
      * instance is the previously set cursor, null is also returned.
      */
