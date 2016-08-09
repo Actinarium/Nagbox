@@ -68,23 +68,26 @@ public class TasksRVAdapter extends RecyclerView.Adapter<TaskItemHolder> {
     }
 
     /**
-     * Swap in a new cursor, returning the old cursor. The returned old cursor is <b>not closed.</b>
+     * Swap in a new cursor and a projection that maps this cursor to the {@link Task} model. Returns the old cursor.
+     * The returned old cursor is <b>not closed.</b>
      *
-     * @param newCursor The new cursor to be used.
+     * @param newCursor  The new cursor to be used.
+     * @param projection The projection object that maps this new cursor to the model.
      * @return Returns the previously set cursor, or null if there wasn't one. If the given new cursor is the same
      * instance is the previously set cursor, null is also returned.
      */
-    public Cursor swapCursor(Cursor newCursor) {
+    public Cursor swapCursor(Cursor newCursor, Projection<Task> projection) {
+        if (newCursor != null && projection == null) {
+            throw new IllegalArgumentException("Cannot provide projection=null when newCursor is not null");
+        }
         if (newCursor == mCursor) {
             return null;
         }
+        // Normally you wouldn't supply a new projection with an old cursor, right? For simplicity, not checking this.
+        mTaskProjection = projection;
         Cursor oldCursor = mCursor;
         mCursor = newCursor;
         notifyDataSetChanged();
         return oldCursor;
-    }
-
-    public void setTaskProjection(Projection<Task> taskProjection) {
-        mTaskProjection = taskProjection;
     }
 }

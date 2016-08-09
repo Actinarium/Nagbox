@@ -69,6 +69,25 @@ public final class NagboxDbOps {
     }
 
     /**
+     * Query the maximum display order of all tasks. Required to determine the order of the next created task.
+     *
+     * @param db Readable database
+     * @return maximum present display order, or 0 if there are zero rows in the DB
+     */
+    public static int getMaxTaskOrder(SQLiteDatabase db) {
+        // Make an aggregated query for max(display_order) of all tasks
+        Cursor cursor = db.query(
+                TasksTable.TABLE_NAME,
+                new String[]{BuildingBlocks.AGGR_COL_MAX_DISPLAY_ORDER},
+                null, null, null, null, null
+        );
+        cursor.moveToFirst();
+        final int result = cursor.isNull(0) ? 0 : cursor.getInt(0);
+        cursor.close();
+        return result;
+    }
+
+    /**
      * Query tasks table to determine the closest alarm to fire. Simply queries the minimum timestamp of active tasks
      * &mdash; since the timestamp is updated whenever it fires and/or the task gets active, there won't be leftover
      * timestamps in the past.
@@ -80,7 +99,7 @@ public final class NagboxDbOps {
         // Make an aggregated query for min(next_fire_at) where task is active
         Cursor cursor = db.query(
                 TasksTable.TABLE_NAME,
-                new String[]{BuildingBlocks.AGGR_COL_MINIMUM_NEXT_FIRE_AT},
+                new String[]{BuildingBlocks.AGGR_COL_MIN_NEXT_FIRE_AT},
                 BuildingBlocks.SELECTION_TASK_ACTIVE,
                 null, null, null, null
         );

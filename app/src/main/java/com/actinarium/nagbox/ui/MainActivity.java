@@ -33,7 +33,6 @@ import com.actinarium.nagbox.common.ViewUtils;
 import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.BuildingBlocks;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
-import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
 import com.actinarium.nagbox.service.NagboxService;
@@ -44,7 +43,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
 
     private static final int LOADER_TASKS = 1;
-    private static final Projection<Task> PROJECTION = NagboxContract.TASK_FULL_PROJECTION;
 
     private MainActivityBinding mBinding;
     private TasksRVAdapter mTasksAdapter;
@@ -58,7 +56,6 @@ public class MainActivity extends AppCompatActivity
         ViewUtils.setupRecentsIcon(this, R.color.primaryDark, R.mipmap.ic_launcher);
 
         mTasksAdapter = new TasksRVAdapter(this, this);
-        mTasksAdapter.setTaskProjection(PROJECTION);
         mBinding.recycler.setAdapter(mTasksAdapter);
         mBinding.recycler.setHasFixedSize(true);
 
@@ -137,7 +134,7 @@ public class MainActivity extends AppCompatActivity
         return new CursorLoader(
                 this,
                 TasksTable.CONTENT_URI,
-                PROJECTION.getColumns(),
+                NagboxContract.TASK_FULL_PROJECTION.getColumns(),
                 null, null,
                 BuildingBlocks.ORDER_BY_DISPLAY_ORDER_ASC
         );
@@ -146,11 +143,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d(TAG, "Loader received new cursor");
-        mTasksAdapter.swapCursor(data);
+        mTasksAdapter.swapCursor(data, NagboxContract.TASK_FULL_PROJECTION);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mTasksAdapter.swapCursor(null);
+        mTasksAdapter.swapCursor(null, null);
     }
 }

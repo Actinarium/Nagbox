@@ -65,8 +65,8 @@ public class Task implements Parcelable {
      */
     public long lastStartedAt;
     /**
-     * Position of this task in the list. The app should make all efforts to ensure it's unique. Will be used for
-     * drag-to-reorder.
+     * Position of this task in the list. The app should make all efforts to ensure it's unique, but it doesn't have to
+     * be continuous (i.e. no need to recalculate order when deleting items). Will be used for drag-to-reorder.
      */
     public int displayOrder;
 

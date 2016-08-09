@@ -190,9 +190,10 @@ public class NagboxService extends IntentService {
 
 
     private void handleCreateTask(Task task) {
-        // Here goes extra logic if required (e.g. preparing related entities etc.)
-        // ...
-        // In our case it's not needed.
+        // Our app must ensure that task order is correct and unique. So assign the order = max(order) + 1
+        // We could (and should) do this atomically using INSERT with sub-query, but that's not trivial with given APIs.
+        int maxOrder = NagboxDbOps.getMaxTaskOrder(mDatabase);
+        task.displayOrder = maxOrder + 1;
 
         // In the end of the method we put everything into the DB using DbOps.Transaction
         boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
@@ -281,9 +282,17 @@ public class NagboxService extends IntentService {
     }
 
     private void handleRestoreTask(Task task) {
-        // Since we don't depend on _id for ordering, we can just create a new task. Still need to kick the alarm.
-        handleCreateTask(task);
-        rescheduleAlarm();
+        // Restoring is the same as creating, and our task already has an order field set correctly, and an ID to notify
+        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
+                .createTask(task)
+                .commit();
+
+        if (isSuccess) {
+            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
+            rescheduleAlarm();
+        } else {
+            Log.e(TAG, "Couldn't restore task " + task);
+        }
     }
 
     private void rescheduleAlarm() {
