@@ -36,7 +36,7 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
     private static final String TAG = "NagboxDbHelper";
 
     private static final String DATABASE_NAME = "nagbox.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static volatile NagboxDbHelper sInstance;
 
@@ -62,9 +62,9 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        execFile(db, R.raw.schema_v1);
-        execFile(db, R.raw.migration_v1_v2);
-        // When there are too many migrations, just create a new base schema (e.g. schema_v4)
+        // When a few migrations have accumulated, it makes sense to update the base schema.
+        // Like, now we're shipping with v3
+        execFile(db, R.raw.schema_v3);
         importInitialData(db);
     }
 
@@ -75,9 +75,9 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
             case 1:
                 Log.i(TAG, "Migrating DB: v1 -> v2");
                 execFile(db, R.raw.migration_v1_v2);
-//          case 2:
-//              Log.i(TAG, "Migrating DB: v2 -> v3");
-//              execFile(db, R.raw.migration_v2_v3);
+            case 2:
+                Log.i(TAG, "Migrating DB: v2 -> v3");
+                execFile(db, R.raw.migration_v2_v3);
 //          case 3:
 //              Log.i(TAG, "Migrating DB: v3 -> v4");
 //              execFile(db, R.raw.migration_v3_v4);
@@ -114,6 +114,7 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
         for (int i = 0; i < length; i++) {
             reusableTask.title = starterTaskTitles[i];
             reusableTask.interval = starterTaskIntervals[i];
+            reusableTask.displayOrder = i + 1;
             transaction.createTask(reusableTask);
         }
         transaction.commit();

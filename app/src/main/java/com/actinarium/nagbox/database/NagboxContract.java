@@ -47,6 +47,7 @@ public final class NagboxContract {
         public static final String COL_FLAGS = "flags";
         public static final String COL_NEXT_FIRE_AT = "next_fire_at";
         public static final String COL_LAST_STARTED_AT = "last_started_at";
+        public static final String COL_DISPLAY_ORDER = "display_order";
 
         // Content provider stuff
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TASKS).build();
@@ -72,6 +73,7 @@ public final class NagboxContract {
 
         String AGGR_COL_MINIMUM_NEXT_FIRE_AT = "MIN(" + TasksTable.COL_NEXT_FIRE_AT + ")";
 
+        String ORDER_BY_DISPLAY_ORDER_ASC = TasksTable.COL_DISPLAY_ORDER + " ASC";
         String ORDER_BY_TASK_FIRE_AT_ASC = TasksTable.COL_NEXT_FIRE_AT + " ASC";
 
     }
@@ -92,7 +94,8 @@ public final class NagboxContract {
                 TasksTable.COL_INTERVAL,
                 TasksTable.COL_FLAGS,
                 TasksTable.COL_NEXT_FIRE_AT,
-                TasksTable.COL_LAST_STARTED_AT
+                TasksTable.COL_LAST_STARTED_AT,
+                TasksTable.COL_DISPLAY_ORDER
         };
 
         @Override
@@ -112,6 +115,7 @@ public final class NagboxContract {
             task.flags = cursor.getInt(3);
             task.nextFireAt = cursor.getLong(4);
             task.lastStartedAt = cursor.getLong(5);
+            task.displayOrder = cursor.getInt(6);
 
             return task;
         }

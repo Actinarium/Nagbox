@@ -1,2 +1,2 @@
 ALTER TABLE tasks
-ADD COLUMN last_started_at INTEGER
+ADD COLUMN "last_started_at" INTEGER

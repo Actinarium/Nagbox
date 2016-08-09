@@ -64,6 +64,11 @@ public class Task implements Parcelable {
      * Timestamp (msec) when this task was last started. Can be undefined (usually 0) until started at least once.
      */
     public long lastStartedAt;
+    /**
+     * Position of this task in the list. The app should make all efforts to ensure it's unique. Will be used for
+     * drag-to-reorder.
+     */
+    public int displayOrder;
 
 
     public Task() {}
@@ -80,6 +85,7 @@ public class Task implements Parcelable {
         this.flags = source.flags;
         this.nextFireAt = source.nextFireAt;
         this.lastStartedAt = source.lastStartedAt;
+        this.displayOrder = source.displayOrder;
     }
 
     public boolean isActive() {
@@ -110,17 +116,36 @@ public class Task implements Parcelable {
     // On a side note, it may make sense to externalize this too
 
     /**
-     * Get {@link ContentValues} for this model to feed it to create/update operations
+     * Get {@link ContentValues} for this model to feed it to create/restore operations
      *
-     * @return <code>ContentValues</code> with title, interval, and flags
+     * @return <code>ContentValues</code> with all fields
      * @see #toContentValuesOnStatusChange()
-     * @see #toContentValuesOnRestore()
+     * @see #toContentValuesOnUpdate()
      */
     public ContentValues toContentValues() {
-        ContentValues values = new ContentValues(3);
+        ContentValues values = new ContentValues(7);
+        if (id != Task.NO_ID) {
+            // Preserving the ID on restore makes it easier for RecyclerView to reuse the holders
+            values.put(TasksTable._ID, id);
+        }
         values.put(TasksTable.COL_TITLE, title);
         values.put(TasksTable.COL_INTERVAL, interval);
         values.put(TasksTable.COL_FLAGS, flags);
+        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
+        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
+        values.put(TasksTable.COL_DISPLAY_ORDER, displayOrder);
+        return values;
+    }
+
+    /**
+     * Get {@link ContentValues} for this model to feed it to update description operations
+     *
+     * @return <code>ContentValues</code> with title and interval
+     */
+    public ContentValues toContentValuesOnUpdate() {
+        ContentValues values = new ContentValues(2);
+        values.put(TasksTable.COL_TITLE, title);
+        values.put(TasksTable.COL_INTERVAL, interval);
         return values;
     }
 
@@ -128,30 +153,13 @@ public class Task implements Parcelable {
      * Get {@link ContentValues} for this model when its status (flags, last started and next fire time) needs to be
      * updated
      *
-     * @return <code>ContentValues</code> with flags and nextFireAt
+     * @return <code>ContentValues</code> with flags, lastStartedAt, and nextFireAt
      */
     public ContentValues toContentValuesOnStatusChange() {
-        ContentValues values = new ContentValues(2);
+        ContentValues values = new ContentValues(3);
         values.put(TasksTable.COL_FLAGS, flags);
         values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
         values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
-        return values;
-    }
-
-    /**
-     * Get {@link ContentValues} for this model to feed it to restore deleted task operation. Will contain all fields,
-     * including {@link #id}.
-     *
-     * @return <code>ContentValues</code> with all fields
-     */
-    public ContentValues toContentValuesOnRestore() {
-        ContentValues values = new ContentValues(5);
-        values.put(TasksTable._ID, id);
-        values.put(TasksTable.COL_TITLE, title);
-        values.put(TasksTable.COL_INTERVAL, interval);
-        values.put(TasksTable.COL_FLAGS, flags);
-        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
-        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
         return values;
     }
 
@@ -169,6 +177,7 @@ public class Task implements Parcelable {
         return Integer.toString(interval);
     }
 
+    @SuppressWarnings("unused")
     public void setIntervalAsString(String value) {
         interval = value.isEmpty() ? 0 : Integer.parseInt(value);
     }
@@ -184,6 +193,7 @@ public class Task implements Parcelable {
                 ", flags=" + flags +
                 ", nextFireAt=" + nextFireAt +
                 ", lastStartedAt=" + lastStartedAt +
+                ", displayOrder=" + displayOrder +
                 '}';
     }
 
@@ -196,6 +206,7 @@ public class Task implements Parcelable {
         flags = in.readInt();
         nextFireAt = in.readLong();
         lastStartedAt = in.readLong();
+        displayOrder = in.readInt();
     }
 
     public static final Creator<Task> CREATOR = new Creator<Task>() {
@@ -223,5 +234,6 @@ public class Task implements Parcelable {
         parcel.writeInt(flags);
         parcel.writeLong(nextFireAt);
         parcel.writeLong(lastStartedAt);
+        parcel.writeInt(displayOrder);
     }
 }

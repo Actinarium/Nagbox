@@ -31,6 +31,7 @@ import android.view.View;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
 import com.actinarium.nagbox.database.NagboxContract;
+import com.actinarium.nagbox.database.NagboxContract.BuildingBlocks;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.database.Projection;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
@@ -137,7 +138,8 @@ public class MainActivity extends AppCompatActivity
                 this,
                 TasksTable.CONTENT_URI,
                 PROJECTION.getColumns(),
-                null, null, null
+                null, null,
+                BuildingBlocks.ORDER_BY_DISPLAY_ORDER_ASC
         );
     }
 

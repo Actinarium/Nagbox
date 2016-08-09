@@ -236,7 +236,7 @@ public final class NagboxDbOps {
         }
 
         /**
-         * Update the task. Only description fields exported in {@link Task#toContentValues()} will be updated.
+         * Update the task. Only description fields exported in {@link Task#toContentValuesOnUpdate()} will be updated.
          *
          * @param task Task to update. Must have {@link Task#id} set.
          * @return this for chaining
@@ -249,7 +249,7 @@ public final class NagboxDbOps {
 
             int rowsAffected = mDatabase.update(
                     TasksTable.TABLE_NAME,
-                    task.toContentValues(),
+                    task.toContentValuesOnUpdate(),
                     BuildingBlocks.SELECTION_ID,
                     new String[]{Long.toString(task.id)}
             );
@@ -303,33 +303,6 @@ public final class NagboxDbOps {
                     BuildingBlocks.SELECTION_ID,
                     new String[]{Long.toString(taskId)}
             );
-
-            return this;
-        }
-
-        /**
-         * Restore the deleted task back into the database. Temporary; will be replaced with create
-         *
-         * @param task Task to restore. Must already have an ID - this method will put it back where it previously was.
-         * @return this for chaining
-         */
-        public Transaction restoreTask(Task task) {
-            // Suppress the action if transaction is already failed
-            if (!mIsSuccess) {
-                return this;
-            }
-
-            long id = mDatabase.insert(
-                    TasksTable.TABLE_NAME,
-                    null,
-                    task.toContentValuesOnRestore()
-            );
-            if (id != -1) {
-                task.id = id;
-            } else {
-                mIsSuccess = false;
-                mDatabase.endTransaction();
-            }
 
             return this;
         }

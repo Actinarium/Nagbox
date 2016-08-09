@@ -281,8 +281,9 @@ public class NagboxService extends IntentService {
     }
 
     private void handleRestoreTask(Task task) {
+        // Restoring is the same as creating, but since our task will have id, it will be put at the old place. Nice!
         boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .restoreTask(task)
+                .createTask(task)
                 .commit();
 
         if (isSuccess) {
