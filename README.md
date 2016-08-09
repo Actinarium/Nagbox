@@ -1,7 +1,9 @@
 # Nagbox
-** Recurring reminders for wayward creatives. **
+**Recurring reminders for wayward creatives.**
 
 Nagbox is a small app designed to do one thing: nag you repeatedly when you waste your time and lose track of it. Just set up a recurring reminder, enable it when you start slacking, and you’ll never ever wonder where your time has gone.
+
+![Screenshots](https://raw.githubusercontent.com/Actinarium/Nagbox/master/images/screens.png)
 
 ---
 
