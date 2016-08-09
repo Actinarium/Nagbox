@@ -281,17 +281,9 @@ public class NagboxService extends IntentService {
     }
 
     private void handleRestoreTask(Task task) {
-        // Restoring is the same as creating, but since our task will have id, it will be put at the old place. Nice!
-        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .createTask(task)
-                .commit();
-
-        if (isSuccess) {
-            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
-            rescheduleAlarm();
-        } else {
-            Log.e(TAG, "Couldn't restore task " + task);
-        }
+        // Since we don't depend on _id for ordering, we can just create a new task. Still need to kick the alarm.
+        handleCreateTask(task);
+        rescheduleAlarm();
     }
 
     private void rescheduleAlarm() {

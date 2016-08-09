@@ -123,11 +123,7 @@ public class Task implements Parcelable {
      * @see #toContentValuesOnUpdate()
      */
     public ContentValues toContentValues() {
-        ContentValues values = new ContentValues(7);
-        if (id != Task.NO_ID) {
-            // Preserving the ID on restore makes it easier for RecyclerView to reuse the holders
-            values.put(TasksTable._ID, id);
-        }
+        ContentValues values = new ContentValues(6);
         values.put(TasksTable.COL_TITLE, title);
         values.put(TasksTable.COL_INTERVAL, interval);
         values.put(TasksTable.COL_FLAGS, flags);
