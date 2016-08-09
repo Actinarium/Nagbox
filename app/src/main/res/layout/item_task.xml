@@ -62,7 +62,7 @@
                     app:firstLineLeading="16dp"
                     app:leading="20dp"
                     app:lastLineDescent="4dp"
-                    android:text="@{task.isActive ? DateUtils.prettyPrintStartTime(task.lastStartedAt, context) : @string/status_idle}"
+                    android:text="@{task.isActive ? DateUtils.prettyPrintStartTime(context, task.lastStartedAt) : @string/status_idle}"
                     tools:text="Started on 21 Jan, 2012 at 8:21 PM"/>
 
             <com.actinarium.aligned.TextView

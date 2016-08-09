@@ -39,11 +39,12 @@ public final class DateUtils {
      * shows "Started on {date} at {time}". {date} and {time} are picked the best possible for current locale and
      * settings.
      *
-     * @param timestamp instant to render
      * @param context   context
+     * @param timestamp instant to render
      * @return pretty printed time/date
      */
-    public static String prettyPrintStartTime(long timestamp, Context context) {
+    public static String prettyPrintStartTime(Context context, long timestamp) {
+        // todo: consider replacing this with android.text.format.DateUtils
         Calendar now = GregorianCalendar.getInstance();
         Calendar then = GregorianCalendar.getInstance();
         then.setTimeInMillis(timestamp);
@@ -72,6 +73,32 @@ public final class DateUtils {
         String dateString = DateFormat.format(bestFormatString, then).toString();
         String timeString = DateFormat.getTimeFormat(context).format(then.getTime());
         return context.getString(R.string.status_started_on_at, dateString, timeString);
+    }
+
+    /**
+     * Pretty prints nag duration for the notification. For under 60 minutes, shows full minutes. For exact hours,
+     * shows message with only hours. Otherwise shows in format "for 2h 30m already".
+     *
+     * @param context context
+     * @param since   when the task started
+     * @param to      when the notification fired
+     * @return pretty printed message
+     */
+    public static String prettyPrintNagDuration(Context context, long since, long to) {
+        int fullMinutes = (int) ((to - since) / android.text.format.DateUtils.MINUTE_IN_MILLIS);
+        if (fullMinutes < 60) {
+            return context.getResources()
+                    .getQuantityString(R.plurals.notification_nag_duration_minutes, fullMinutes, fullMinutes);
+        } else {
+            int hours = fullMinutes % 60;
+            int minutes = fullMinutes / 60;
+            if (minutes == 0) {
+                return context.getResources()
+                        .getQuantityString(R.plurals.notification_nag_duration_hours, hours, hours);
+            } else {
+                return context.getString(R.string.notification_nag_duration_hours_minutes, hours, minutes);
+            }
+        }
     }
 
 }

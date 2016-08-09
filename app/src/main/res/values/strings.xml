@@ -46,11 +46,16 @@
         <item quantity="other">Nagging you about <xliff:g id="count" example="5">%d</xliff:g> tasks</item>
     </plurals>
     <string name="notification_stack_overflow">+<xliff:g id="number_of_overflown_tasks" example="2">%d</xliff:g> more</string>
-    <plurals name="notification_nag_description">
-        <item quantity="one">Another minute passed</item>
-        <item quantity="other">Another <xliff:g id="number_of_minutes" example="2">%d</xliff:g> minutes passed</item>
+    <plurals name="notification_nag_duration_minutes">
+        <item quantity="one">for <xliff:g id="minutes" example="1">%d</xliff:g> minute already</item>
+        <item quantity="other">for <xliff:g id="minutes" example="5">%d</xliff:g> minutes already</item>
     </plurals>
-    <string name="notification_action_stop">Stop nagging</string>
+    <plurals name="notification_nag_duration_hours">
+        <item quantity="one">for <xliff:g id="hours" example="1">%d</xliff:g> hour already</item>
+        <item quantity="other">for <xliff:g id="hours" example="5">%d</xliff:g> hours already</item>
+    </plurals>
+    <string name="notification_nag_duration_hours_minutes">for <xliff:g id="hours" example="1">%1$d</xliff:g>h <xliff:g id="minutes" example="10">%2$d</xliff:g>m already</string>
+    <string name="notification_action_stop">Stop this</string>
 
     <string-array name="starter_tasks">
         <item>Browsing social media</item>

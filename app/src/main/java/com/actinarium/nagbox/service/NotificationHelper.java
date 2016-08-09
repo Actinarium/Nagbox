@@ -26,7 +26,9 @@ import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import com.actinarium.nagbox.R;
+import com.actinarium.nagbox.common.DateUtils;
 import com.actinarium.nagbox.model.Task;
 import com.actinarium.nagbox.ui.MainActivity;
 
@@ -37,8 +39,11 @@ import com.actinarium.nagbox.ui.MainActivity;
  */
 public final class NotificationHelper {
 
-    static final int NAG_NOTIFICATION_ID = 0;
-    static final String NAG_NOTIFICATION_GROUP = "nagbox";
+    private static final int NAG_NOTIFICATION_ID = 0;
+    private static final String NAG_NOTIFICATION_GROUP = "nagbox";
+
+    private static final String INBOX_STYLE_LINE_FORMAT_L = "<font face=\"sans-serif-medium\">%1$s</font> %2$s";
+    private static final String INBOX_STYLE_LINE_FORMAT_OLD = "<b>%1$s</b> %2$s";
 
     private NotificationHelper() {}
 
@@ -73,12 +78,10 @@ public final class NotificationHelper {
                 .build();
 
         // Create private notification
-        final String tempDescription = context.getResources()
-                .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
         Notification privateNotification = makeCommonBuilder(context, currentTime, task.id)
                 .setPublicVersion(publicNotification)
                 .setContentTitle(task.title)
-                .setContentText(tempDescription)
+                .setContentText(DateUtils.prettyPrintNagDuration(context, task.lastStartedAt, currentTime))
                 .addAction(R.drawable.ic_cancel, context.getString(R.string.notification_action_stop), stopActionPI)
                 .build();
 
@@ -103,11 +106,9 @@ public final class NotificationHelper {
             // Since actions are "equal" (differ in extras only), need to use a unique "request code" (task.id will do)
             PendingIntent stopActionPI = PendingIntent.getService(context, (int) task.id, stopAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            final String tempDescription = context.getResources()
-                    .getQuantityString(R.plurals.notification_nag_description, task.interval, task.interval);
             Notification stackedItem = makeCommonBuilder(context, currentTime, task.id)
                     .setContentTitle(task.title)
-                    .setContentText(tempDescription)
+                    .setContentText(DateUtils.prettyPrintNagDuration(context, task.lastStartedAt, currentTime))
                     .setGroup(NAG_NOTIFICATION_GROUP)
                     .addAction(R.drawable.ic_cancel, context.getString(R.string.notification_action_stop), stopActionPI)
                     .build();
@@ -136,11 +137,11 @@ public final class NotificationHelper {
         inboxStyle.setBigContentTitle(summary);
         if (tasksCount <= 5) {
             for (Task task : tasks) {
-                inboxStyle.addLine(task.title);
+                inboxStyle.addLine(makeInboxStyleLine(context, task, currentTime));
             }
         } else {
             for (int i = 0; i < 4; i++) {
-                inboxStyle.addLine(tasks[i].title);
+                inboxStyle.addLine(makeInboxStyleLine(context, tasks[i], currentTime));
             }
             inboxStyle.addLine(context.getString(R.string.notification_stack_overflow, tasksCount - 4));
         }
@@ -156,6 +157,29 @@ public final class NotificationHelper {
                 .build();
 
         notifManager.notify(NAG_NOTIFICATION_ID, privateNotification);
+    }
+
+    /**
+     * Cancel the notification by provided ID. On Android N will also cancel the summary notification if it's the last
+     * child being removed.
+     *
+     * @param context        context
+     * @param notificationId ID of the notification to cancel
+     */
+    public static void cancelNotification(Context context, int notificationId) {
+        final NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
+        managerCompat.cancel(notificationId);
+
+        // Apparently N doesn't cancel summary notification when all individual ones are cancelled
+        // So we have to do it ourselves
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            final StatusBarNotification[] notifs = manager.getActiveNotifications();
+            if (notifs.length == 1 && notifs[0].getId() == NAG_NOTIFICATION_ID && notifs[0].isGroup()) {
+                // This must be the remaining summary. Clear it away
+                managerCompat.cancel(NAG_NOTIFICATION_ID);
+            }
+        }
     }
 
     /**
@@ -191,26 +215,16 @@ public final class NotificationHelper {
                 .setDefaults(NotificationCompat.DEFAULT_ALL);
     }
 
-    /**
-     * Cancel the notification by provided ID. On Android N will also cancel the summary notification if it's the last
-     * child being removed.
-     *
-     * @param context        context
-     * @param notificationId ID of the notification to cancel
-     */
-    public static void cancelNotification(Context context, int notificationId) {
-        final NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
-        managerCompat.cancel(notificationId);
-
-        // Apparently N doesn't cancel summary notification when all individual ones are cancelled
-        // So we have to do it ourselves
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            NotificationManager manager = context.getSystemService(NotificationManager.class);
-            final StatusBarNotification[] notifs = manager.getActiveNotifications();
-            if (notifs.length == 1 && notifs[0].getId() == NAG_NOTIFICATION_ID && notifs[0].isGroup()) {
-                // This must be the remaining summary. Clear it away
-                managerCompat.cancel(NAG_NOTIFICATION_ID);
-            }
+    private static CharSequence makeInboxStyleLine(Context context, Task task, long now) {
+        final String duration = DateUtils.prettyPrintNagDuration(context, task.lastStartedAt, now);
+        if (Build.VERSION.SDK_INT >= 24) {
+            return Html.fromHtml(String.format(INBOX_STYLE_LINE_FORMAT_L, task.title, duration), Html.FROM_HTML_MODE_LEGACY);
+        } else if (Build.VERSION.SDK_INT >= 21) {
+            //noinspection deprecation
+            return Html.fromHtml(String.format(INBOX_STYLE_LINE_FORMAT_L, task.title, duration));
+        } else {
+            //noinspection deprecation
+            return Html.fromHtml(String.format(INBOX_STYLE_LINE_FORMAT_OLD, task.title, duration));
         }
     }
 }
