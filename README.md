@@ -12,7 +12,7 @@ Actually, this is a really simple app made for three reasons:
 
 1. A sample for my upcoming Medium articles on various Android development and design patterns (e.g. the first one will be on SQLite integration approach);
 2. A playground to get familiar with new things (e.g. data binding, N notifications);
-3. Actually, I need an app like this myself, and it’s quite possible that I’ll further develop it into a complete full-featured app. Think of it as an MVP developed in under a week.
+3. Actually, I need an app like this myself, and it’s quite possible that I’ll further develop it into a complete full-featured app. Think of it as a minimum viable product developed in under a week.
 
 At the moment the project showcases some best practices for:
 
@@ -26,12 +26,20 @@ At the moment the project showcases some best practices for:
 
 <a href='https://play.google.com/store/apps/details?id=com.actinarium.nagbox&referrer=utm_source%3Dgh-nagbox%26utm_medium%3Dreferral%26utm_term%3Dnagbox-readme'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png' height="72" /></a>
 
+## Not enough MVP!
+
+Some developers may find the lack of MVP/MVC/MVVM/etc architecture in this sample disturbing.
+While I agree that those are great for making large projects organized, I have a strong opinion against over-engineering.
+
+This sample is very simple and does not need MVP. If you like acronyms so much, check out KISS and YAGNI.
+
 ## More from the developer
 
 Be the first to know when I publish new articles, tutorials, libraries and apps:
 
 * Add me to circles on [Google+][gplus]
 * Follow me on [Medium][medium]
+* Follow me on [Twitter][twitter]
 
 Also check out [Material Cue][mcue], my flagship app for Android developers. It’s free.
 
@@ -61,4 +69,5 @@ Do not re-publish this app with zero or minimum modifications, especially for mo
 [this]: https://github.com/Actinarium/Nagbox
 [gplus]: https://plus.google.com/u/0/+PaulDanyliuk/posts
 [medium]: https://medium.com/@Actine
+[twitter]: https://twitter.com/actinarium
 [mcue]: https://play.google.com/store/apps/details?id=com.actinarium.materialcue&referrer=utm_source%3Dgh-nagbox%26utm_medium%3Dreferral%26utm_term%3Dnagbox-readme
