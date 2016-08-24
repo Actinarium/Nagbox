@@ -53,7 +53,7 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
             synchronized (NagboxDbHelper.class) {
                 localInstance = sInstance;
                 if (localInstance == null) {
-                    sInstance = localInstance = new NagboxDbHelper(context);
+                    sInstance = localInstance = new NagboxDbHelper(context.getApplicationContext());
                 }
             }
         }
