@@ -38,7 +38,7 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "nagbox.db";
     private static final int DATABASE_VERSION = 3;
 
-    private static volatile NagboxDbHelper sInstance;
+    private static NagboxDbHelper sInstance;
 
     private final Context mContext;
 
@@ -47,17 +47,11 @@ public class NagboxDbHelper extends SQLiteOpenHelper {
         mContext = context;
     }
 
-    public static NagboxDbHelper getInstance(Context context) {
-        NagboxDbHelper localInstance = sInstance;
-        if (localInstance == null) {
-            synchronized (NagboxDbHelper.class) {
-                localInstance = sInstance;
-                if (localInstance == null) {
-                    sInstance = localInstance = new NagboxDbHelper(context.getApplicationContext());
-                }
-            }
+    public static synchronized NagboxDbHelper getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new NagboxDbHelper(context.getApplicationContext());
         }
-        return localInstance;
+        return sInstance;
     }
 
     @Override
