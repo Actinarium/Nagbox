@@ -88,6 +88,8 @@ public class Task implements Parcelable {
         this.displayOrder = source.displayOrder;
     }
 
+    // Getters/setters for convenient flag setting -----------------------
+
     public boolean isActive() {
         return (flags & FLAG_ACTIVE) != 0;
     }
