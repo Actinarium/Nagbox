@@ -16,6 +16,7 @@
 
 package com.actinarium.nagbox.database;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -239,11 +240,15 @@ public final class NagboxDbOps {
                 return this;
             }
 
-            long id = mDatabase.insert(
-                    TasksTable.TABLE_NAME,
-                    null,
-                    task.toContentValues()
-            );
+            ContentValues values = new ContentValues(6);
+            values.put(TasksTable.COL_TITLE, task.title);
+            values.put(TasksTable.COL_INTERVAL, task.interval);
+            values.put(TasksTable.COL_FLAGS, task.flags);
+            values.put(TasksTable.COL_NEXT_FIRE_AT, task.nextFireAt);
+            values.put(TasksTable.COL_LAST_STARTED_AT, task.lastStartedAt);
+            values.put(TasksTable.COL_DISPLAY_ORDER, task.displayOrder);
+
+            long id = mDatabase.insert(TasksTable.TABLE_NAME, null, values);
             if (id != -1) {
                 task.id = id;
             } else {
@@ -255,7 +260,7 @@ public final class NagboxDbOps {
         }
 
         /**
-         * Update the task. Only description fields exported in {@link Task#toContentValuesOnUpdate()} will be updated.
+         * Update the task. Only {@linkplain Task#title title} and {@linkplain Task#interval interval} will be updated.
          *
          * @param task Task to update. Must have {@link Task#id} set.
          * @return this for chaining
@@ -266,9 +271,13 @@ public final class NagboxDbOps {
                 return this;
             }
 
+            ContentValues values = new ContentValues(2);
+            values.put(TasksTable.COL_TITLE, task.title);
+            values.put(TasksTable.COL_INTERVAL, task.interval);
+
             int rowsAffected = mDatabase.update(
                     TasksTable.TABLE_NAME,
-                    task.toContentValuesOnUpdate(),
+                    values,
                     BuildingBlocks.SELECTION_ID,
                     new String[]{Long.toString(task.id)}
             );
@@ -281,7 +290,7 @@ public final class NagboxDbOps {
         }
 
         /**
-         * Update task status, i.e. only status fields exported in {@link Task#toContentValuesOnStatusChange()}.
+         * Update task status, i.e. only {@link Task#flags}, {@link Task#lastStartedAt}, and {@link Task#nextFireAt}.
          *
          * @param task Task whose status to update. Must have {@link Task#id} set.
          * @return this for chaining
@@ -291,9 +300,14 @@ public final class NagboxDbOps {
                 return this;
             }
 
+            ContentValues values = new ContentValues(3);
+            values.put(TasksTable.COL_FLAGS, task.flags);
+            values.put(TasksTable.COL_LAST_STARTED_AT, task.lastStartedAt);
+            values.put(TasksTable.COL_NEXT_FIRE_AT, task.nextFireAt);
+
             int rowsAffected = mDatabase.update(
                     TasksTable.TABLE_NAME,
-                    task.toContentValuesOnStatusChange(),
+                    values,
                     BuildingBlocks.SELECTION_ID,
                     new String[]{Long.toString(task.id)}
             );

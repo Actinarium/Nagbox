@@ -16,10 +16,8 @@
 
 package com.actinarium.nagbox.model;
 
-import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
-import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 
 /**
  * An entity object for a task
@@ -88,6 +86,8 @@ public class Task implements Parcelable {
         this.displayOrder = source.displayOrder;
     }
 
+    // Getters/setters for convenient flag setting -----------------------
+
     public boolean isActive() {
         return (flags & FLAG_ACTIVE) != 0;
     }
@@ -110,53 +110,6 @@ public class Task implements Parcelable {
         } else {
             flags |= FLAG_NOT_SEEN;
         }
-    }
-
-    // Export into ContentValues for insert/update ops -------------------
-    // On a side note, it may make sense to externalize this too
-
-    /**
-     * Get {@link ContentValues} for this model to feed it to create/restore operations
-     *
-     * @return <code>ContentValues</code> with all fields
-     * @see #toContentValuesOnStatusChange()
-     * @see #toContentValuesOnUpdate()
-     */
-    public ContentValues toContentValues() {
-        ContentValues values = new ContentValues(6);
-        values.put(TasksTable.COL_TITLE, title);
-        values.put(TasksTable.COL_INTERVAL, interval);
-        values.put(TasksTable.COL_FLAGS, flags);
-        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
-        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
-        values.put(TasksTable.COL_DISPLAY_ORDER, displayOrder);
-        return values;
-    }
-
-    /**
-     * Get {@link ContentValues} for this model to feed it to update description operations
-     *
-     * @return <code>ContentValues</code> with title and interval
-     */
-    public ContentValues toContentValuesOnUpdate() {
-        ContentValues values = new ContentValues(2);
-        values.put(TasksTable.COL_TITLE, title);
-        values.put(TasksTable.COL_INTERVAL, interval);
-        return values;
-    }
-
-    /**
-     * Get {@link ContentValues} for this model when its status (flags, last started and next fire time) needs to be
-     * updated
-     *
-     * @return <code>ContentValues</code> with flags, lastStartedAt, and nextFireAt
-     */
-    public ContentValues toContentValuesOnStatusChange() {
-        ContentValues values = new ContentValues(3);
-        values.put(TasksTable.COL_FLAGS, flags);
-        values.put(TasksTable.COL_LAST_STARTED_AT, lastStartedAt);
-        values.put(TasksTable.COL_NEXT_FIRE_AT, nextFireAt);
-        return values;
     }
 
     // Getters/setters for 2-way data binding ----------------------------
