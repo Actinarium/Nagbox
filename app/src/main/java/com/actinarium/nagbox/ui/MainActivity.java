@@ -30,12 +30,12 @@ import android.util.Log;
 import android.view.View;
 import com.actinarium.nagbox.R;
 import com.actinarium.nagbox.common.ViewUtils;
+import com.actinarium.nagbox.database.NagboxOperations;
 import com.actinarium.nagbox.database.NagboxContract;
 import com.actinarium.nagbox.database.NagboxContract.BuildingBlocks;
 import com.actinarium.nagbox.database.NagboxContract.TasksTable;
 import com.actinarium.nagbox.databinding.MainActivityBinding;
 import com.actinarium.nagbox.model.Task;
-import com.actinarium.nagbox.service.NagboxService;
 
 public class MainActivity extends AppCompatActivity
         implements TaskItemHolder.Host, EditTaskDialogFragment.Host, LoaderManager.LoaderCallbacks<Cursor> {
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity
             task.lastStartedAt = System.currentTimeMillis();
             task.nextFireAt = task.lastStartedAt + task.interval * DateUtils.MINUTE_IN_MILLIS;
         }
-        NagboxService.updateTaskStatus(this, task);
+        NagboxOperations.updateTaskStatus(this, task);
     }
 
     public void onCreateTask() {
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDeleteTask(final Task task) {
-        NagboxService.deleteTask(this, task.id);
+        NagboxOperations.deleteTask(this, task.id);
         Snackbar.make(mBinding.getRoot(), getString(R.string.deleted_message, task.title), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, new View.OnClickListener() {
                     @Override
@@ -104,17 +104,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void restoreTask(Task task) {
-        NagboxService.restoreTask(this, task);
+        NagboxOperations.restoreTask(this, task);
     }
 
     @Override
     public void saveNewTask(Task task) {
-        NagboxService.createTask(this, task);
+        NagboxOperations.createTask(this, task);
     }
 
     @Override
     public void saveEditedTask(Task task) {
-        NagboxService.updateTask(this, task);
+        NagboxOperations.updateTask(this, task);
     }
 
     /**

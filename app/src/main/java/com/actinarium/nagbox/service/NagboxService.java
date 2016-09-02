@@ -45,18 +45,13 @@ public class NagboxService extends IntentService {
 
     private static final String TAG = "NagboxService";
 
-    public static final String ACTION_CREATE_TASK = "com.actinarium.nagbox.intent.action.CREATE_TASK";
-    public static final String ACTION_UPDATE_TASK = "com.actinarium.nagbox.intent.action.UPDATE_TASK";
-    public static final String ACTION_UPDATE_TASK_STATUS = "com.actinarium.nagbox.intent.action.UPDATE_TASK_STATUS";
-    public static final String ACTION_DELETE_TASK = "com.actinarium.nagbox.intent.action.DELETE_TASK";
-    public static final String ACTION_RESTORE_TASK = "com.actinarium.nagbox.intent.action.RESTORE_TASK";
+    public static final String ACTION_RESCHEDULE_ALARM = "com.actinarium.nagbox.intent.action.RESCHEDULE_ALARM";
 
     // These can only be triggered within the system (have no corresponding public ways to call them)
     static final String ACTION_ON_ALARM_FIRED = "com.actinarium.nagbox.intent.action.ON_ALARM_FIRED";
     static final String ACTION_ON_NOTIFICATION_DISMISSED = "com.actinarium.nagbox.intent.action.ON_NOTIFICATION_DISMISSED";
     static final String ACTION_ON_NOTIFICATION_ACTION_STOP_TASK = "com.actinarium.nagbox.intent.action.ON_NOTIFICATION_ACTION_STOP_TASK";
 
-    static final String EXTRA_TASK = "com.actinarium.nagbox.intent.extra.TASK";
     static final String EXTRA_TASK_ID = "com.actinarium.nagbox.intent.extra.TASK_ID";
     static final String EXTRA_CANCEL_NOTIFICATION_ID = "com.actinarium.nagbox.intent.extra.EXTRA_CANCEL_NOTIFICATION_ID";
 
@@ -68,71 +63,14 @@ public class NagboxService extends IntentService {
     private SQLiteDatabase mDatabase;
 
     /**
-     * Create a new unstarted task. Doesn't trigger rescheduling alarms.
+     * Request the service to re-calculate the time when the next alarm must fire, and reschedule the alarm if needed.
+     * Call this when tasks are enabled and disabled (and deleted and restored).
      *
      * @param context context
-     * @param task    task to create
      */
-    public static void createTask(Context context, Task task) {
+    public static void requestAlarmUpdate(Context context) {
         Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_CREATE_TASK);
-        intent.putExtra(EXTRA_TASK, task);
-        context.startService(intent);
-    }
-
-    /**
-     * Update task description. Doesn't update the flags (i.e. doesn't start or stop the task), and as of now it doesn't
-     * reschedule next alarm either. If you need to update task status, use {@link #updateTaskStatus(Context, Task)}.
-     * {@link Task#id} must be set.
-     *
-     * @param context context
-     * @param task    task to update
-     */
-    public static void updateTask(Context context, Task task) {
-        Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_UPDATE_TASK);
-        intent.putExtra(EXTRA_TASK, task);
-        context.startService(intent);
-    }
-
-    /**
-     * Update task status (flags). Use this to start or stop the task. {@link Task#id} must be set. Will result in
-     * rescheduling the alarm to closer time if needed.
-     *
-     * @param context context
-     * @param task    task to update its flags
-     */
-    public static void updateTaskStatus(Context context, Task task) {
-        Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_UPDATE_TASK_STATUS);
-        intent.putExtra(EXTRA_TASK, task);
-        context.startService(intent);
-    }
-
-    /**
-     * Delete the task entirely. Will trigger rescheduling the alarm to later time if needed, or cancelling it.
-     *
-     * @param context context
-     * @param taskId  ID of the task to delete
-     */
-    public static void deleteTask(Context context, long taskId) {
-        Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_DELETE_TASK);
-        intent.putExtra(EXTRA_TASK_ID, taskId);
-        context.startService(intent);
-    }
-
-    /**
-     * Same as {@link #createTask(Context, Task)}, but will insert the task with its old ID and trigger rescheduling the
-     * alarm.
-     *
-     * @param context context
-     * @param task    task to restore
-     */
-    public static void restoreTask(Context context, Task task) {
-        Intent intent = new Intent(context, NagboxService.class);
-        intent.setAction(ACTION_RESTORE_TASK);
-        intent.putExtra(EXTRA_TASK, task);
+        intent.setAction(ACTION_RESCHEDULE_ALARM);
         context.startService(intent);
     }
 
@@ -153,12 +91,10 @@ public class NagboxService extends IntentService {
             return;
         }
 
-        // I know that only either of those is needed, but for the sake of nice code I'm pulling these here
-        final Task task = intent.getParcelableExtra(EXTRA_TASK);
         final long id = intent.getLongExtra(EXTRA_TASK_ID, Task.NO_ID);
         switch (intent.getAction()) {
-            case ACTION_UPDATE_TASK_STATUS:
-                handleUpdateTaskStatus(task);
+            case ACTION_RESCHEDULE_ALARM:
+                rescheduleAlarm();
                 break;
             case ACTION_ON_ALARM_FIRED:
                 handleOnAlarmFired();
@@ -170,80 +106,12 @@ public class NagboxService extends IntentService {
                 int notificationIdToCancel = intent.getIntExtra(EXTRA_CANCEL_NOTIFICATION_ID, -1);
                 handleStopTaskById(id, notificationIdToCancel);
                 break;
-            case ACTION_CREATE_TASK:
-                handleCreateTask(task);
-                break;
-            case ACTION_UPDATE_TASK:
-                handleUpdateTask(task);
-                break;
-            case ACTION_DELETE_TASK:
-                handleDeleteTask(id);
-                break;
-            case ACTION_RESTORE_TASK:
-                handleRestoreTask(task);
-                break;
         }
 
         // Release the wake lock, if there was any.
         WakefulBroadcastReceiver.completeWakefulIntent(intent);
     }
 
-
-    private void handleCreateTask(Task task) {
-        // Our app must ensure that task order is correct and unique. So assign the order = max(order) + 1
-        // We could (and should) do this atomically using INSERT with sub-query, but that's not trivial with given APIs.
-        int maxOrder = NagboxDbOps.getMaxTaskOrder(mDatabase);
-        task.displayOrder = maxOrder + 1;
-
-        // In the end of the method we put everything into the DB using DbOps.Transaction
-        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .createTask(task)
-                .commit();
-
-        // Process transaction result.
-        // If successful, you still need to notify the cursor so that any loaders that listen to this data would reload
-        if (isSuccess) {
-            getContentResolver().notifyChange(TasksTable.CONTENT_URI, null);
-        } else {
-            Log.e(TAG, "Couldn't create task " + task);
-        }
-    }
-
-    private void handleUpdateTask(Task task) {
-        if (task.id < 0) {
-            Log.e(TAG, "Was trying to update task with invalid/unset ID=" + task.id);
-            return;
-        }
-
-        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .updateTask(task)
-                .commit();
-
-        if (isSuccess) {
-            // Even though our content provider doesn't know about a single item URI yet, won't hurt to do it right
-            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
-        } else {
-            Log.e(TAG, "Couldn't update task " + task);
-        }
-    }
-
-    private void handleUpdateTaskStatus(Task task) {
-        if (task.id < 0) {
-            Log.e(TAG, "Was trying to update flags of the task with invalid/unset ID=" + task.id);
-            return;
-        }
-
-        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .updateTaskStatus(task)
-                .commit();
-
-        if (isSuccess) {
-            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
-            rescheduleAlarm();
-        } else {
-            Log.e(TAG, "Couldn't update status of task " + task);
-        }
-    }
 
     private void handleStopTaskById(long taskId, int notificationIdToCancel) {
         if (notificationIdToCancel != -1) {
@@ -260,38 +128,17 @@ public class NagboxService extends IntentService {
 
         task.setIsActive(false);
         task.setIsSeen(true);
-        handleUpdateTaskStatus(task);
-    }
 
-    private void handleDeleteTask(long taskId) {
-        if (taskId < 0) {
-            Log.e(TAG, "Was trying to delete task with invalid ID=" + taskId);
-            return;
-        }
-
+        // Update task status
         boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .deleteTask(taskId)
+                .updateTaskStatus(task)
                 .commit();
 
         if (isSuccess) {
-            getContentResolver().notifyChange(TasksTable.getUriForItem(taskId), null);
+            getContentResolver().notifyChange(NagboxContract.TasksTable.getUriForItem(task.id), null);
             rescheduleAlarm();
         } else {
-            Log.e(TAG, "Couldn't delete task with ID " + taskId);
-        }
-    }
-
-    private void handleRestoreTask(Task task) {
-        // Restoring is the same as creating, and our task already has an order field set correctly, and an ID to notify
-        boolean isSuccess = NagboxDbOps.startTransaction(mDatabase)
-                .createTask(task)
-                .commit();
-
-        if (isSuccess) {
-            getContentResolver().notifyChange(TasksTable.getUriForItem(task.id), null);
-            rescheduleAlarm();
-        } else {
-            Log.e(TAG, "Couldn't restore task " + task);
+            Log.e(TAG, "Couldn't update status of task " + task);
         }
     }
 
